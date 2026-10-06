@@ -1,0 +1,88 @@
+---
+---
+<!-- Toggle Tab Button -->
+<button 
+  id="scratchpad-toggle-btn" 
+  class="fixed bottom-3 left-4 z-40 bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-emerald-400 px-2.5 py-1 rounded font-mono text-[11px] shadow-lg flex items-center gap-1.5 cursor-pointer transition select-none"
+  title="Open Monospace Scratchpad (Local Persistence)"
+>
+  <span class="text-emerald-400 font-bold">#</span>
+  <span>SCRATCHPAD</span>
+</button>
+
+<!-- Slide-Out Drawer -->
+<div id="scratchpad-drawer" class="fixed bottom-12 left-4 z-50 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden font-mono text-xs hidden flex-col animate-fade-in">
+  <div class="bg-slate-950 px-3 py-2 border-b border-slate-800 flex items-center justify-between text-slate-400">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+      <span class="text-slate-300 text-[11px]">local_scratchpad.tmp</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="clear-scratchpad-btn" class="text-[10px] text-slate-500 hover:text-rose-400 transition cursor-pointer">CLEAR</button>
+      <button id="close-scratchpad-btn" class="text-slate-500 hover:text-white transition cursor-pointer">✕</button>
+    </div>
+  </div>
+
+  <textarea 
+    id="scratchpad-textarea" 
+    rows="8" 
+    spellcheck="false"
+    placeholder="// Quick scratchpad (persists in localStorage)...&#10;// Save curl commands, hashes, notes..."
+    class="w-full bg-slate-950/70 p-3 text-slate-200 placeholder:text-slate-600 focus:outline-none resize-none font-mono text-xs leading-relaxed border-none"
+  ></textarea>
+
+  <div class="px-3 py-1.5 bg-slate-950 border-t border-slate-800 flex justify-between text-[10px] text-slate-500">
+    <span id="scratchpad-char-count">0 chars</span>
+    <span class="text-emerald-500/80">PERSISTED_IN_BROWSER</span>
+  </div>
+</div>
+
+<script>
+  function setupScratchpad() {
+    const toggleBtn = document.getElementById('scratchpad-toggle-btn');
+    const drawer = document.getElementById('scratchpad-drawer');
+    const closeBtn = document.getElementById('close-scratchpad-btn');
+    const clearBtn = document.getElementById('clear-scratchpad-btn');
+    const textarea = document.getElementById('scratchpad-textarea') as HTMLTextAreaElement | null;
+    const count = document.getElementById('scratchpad-char-count');
+
+    if (!toggleBtn || !drawer || !textarea || !count) return;
+
+    // Load saved content
+    const saved = localStorage.getItem('scratchpad-content') || '';
+    textarea.value = saved;
+    count.textContent = `${saved.length} chars`;
+
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = drawer.classList.contains('hidden');
+      if (isHidden) {
+        drawer.classList.remove('hidden');
+        drawer.classList.add('flex');
+        textarea.focus();
+      } else {
+        drawer.classList.add('hidden');
+        drawer.classList.remove('flex');
+      }
+    });
+
+    closeBtn?.addEventListener('click', () => {
+      drawer.classList.add('hidden');
+      drawer.classList.remove('flex');
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      textarea.value = '';
+      localStorage.removeItem('scratchpad-content');
+      count.textContent = '0 chars';
+      textarea.focus();
+    });
+
+    textarea.addEventListener('input', () => {
+      localStorage.setItem('scratchpad-content', textarea.value);
+      count.textContent = `${textarea.value.length} chars`;
+    });
+  }
+
+  setupScratchpad();
+  document.addEventListener('astro:after-swap', setupScratchpad);
+</script>

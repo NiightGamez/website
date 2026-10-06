@@ -1,0 +1,53 @@
+---
+---
+<script>
+  function setupHackerScramble() {
+    const letters = "!<>-_\\/[]{}—=+*^?#________01";
+
+    document.querySelectorAll('.scramble-hover').forEach((elem, idx) => {
+      const storageKey = `scrambled_${window.location.pathname}_${idx}`;
+
+      // Check if element already scrambled during this session
+      if (sessionStorage.getItem(storageKey)) {
+        elem.classList.remove('scramble-hover');
+        return;
+      }
+
+      let interval: ReturnType<typeof setInterval> | null = null;
+      const original = elem.getAttribute('data-original') || elem.textContent || '';
+      elem.setAttribute('data-original', original);
+
+      const triggerScramble = () => {
+        // Mark as played so it never runs again this visit
+        sessionStorage.setItem(storageKey, 'true');
+        elem.removeEventListener('mouseenter', triggerScramble);
+        elem.classList.remove('scramble-hover');
+
+        let iteration = 0;
+        if (interval) clearInterval(interval);
+
+        interval = setInterval(() => {
+          elem.textContent = original
+            .split("")
+            .map((char, index) => {
+              if (index < iteration) return original[index];
+              if (char === " ") return " ";
+              return letters[Math.floor(Math.random() * letters.length)];
+            })
+            .join("");
+
+          if (iteration >= original.length) {
+            if (interval) clearInterval(interval);
+            elem.textContent = original;
+          }
+          iteration += 1 / 2;
+        }, 30);
+      };
+
+      elem.addEventListener('mouseenter', triggerScramble);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', setupHackerScramble);
+  document.addEventListener('astro:after-swap', setupHackerScramble);
+</script>

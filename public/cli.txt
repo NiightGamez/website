@@ -1,0 +1,27 @@
+[32m
+  __  __ _      _                  _ 
+ |  \/  (_)    | |                | |
+ | \  / |_  ___| |__   __ _  ___  | |
+ | |\/| | |/ __| '_ \ / _` |/ _ \ | |
+ |_|  |_|_|\___|_| |_|\__,_|\___/ |_|
+[0m
+===========================================================
+[36mMichael Voorhies[0m // Systems, Networking & Defensive Security
+[33mCompTIA Trifecta[0m : Security+ | Network+ | A+
+[32mInfrastructure  [0m : Debian 12, Proxmox VE, Docker, Nginx
+[35mIngress Gateway [0m : Cloudflare Zero Trust Tunnel
+===========================================================
+
+[1m[CORE FOCUS][0m
+• Real-time systems & dynamic task scheduling (EDF / POSIX C)
+• Host-level detection & filesystem tripwires (auditd)
+• Network intrusion detection & Layer-7 inspection (Suricata)
+
+[1m[LINKS & SHORTCUTS][0m
+• Portfolio : https://mvoorhies.com/portfolio
+• Homelab   : https://mvoorhies.com/homelab
+• Status    : https://status.mvoorhies.com
+• GitHub    : https://github.com/NiightGamez
+• Email     : contact@mvoorhies.com
+
+[90mRun 'curl -L mvoorhies.com/cli' anytime to refresh this terminal buffer.[0m

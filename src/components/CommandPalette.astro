@@ -1,0 +1,249 @@
+---
+---
+<div id="cmd-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl overflow-hidden font-mono text-xs flex flex-col max-h-[80vh]">
+    <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+        <span class="ml-2 text-slate-300">terminal@mvoorhies:~ (CLI)</span>
+      </div>
+      <button id="close-cmd" class="text-slate-500 hover:text-white transition cursor-pointer">ESC</button>
+    </div>
+
+    <div id="cmd-output" class="p-4 overflow-y-auto space-y-2 flex-1 text-slate-300 select-text leading-relaxed">
+      <div class="text-slate-500">
+        Type <span class="text-emerald-400">help</span> to view available commands. Press <span class="text-slate-400">ESC</span> to close.
+      </div>
+    </div>
+
+    <div class="p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-2">
+      <span class="text-emerald-400 font-bold">❯</span>
+      <input 
+        id="cmd-input" 
+        type="text" 
+        autocomplete="off" 
+        spellcheck="false" 
+        placeholder="Enter command..."
+        class="bg-transparent border-none outline-none text-slate-100 flex-1 placeholder:text-slate-600 font-mono text-xs"
+      />
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupCommandPalette() {
+    const modal = document.getElementById('cmd-modal');
+    const input = document.getElementById('cmd-input') as HTMLInputElement | null;
+    const output = document.getElementById('cmd-output');
+    const closeBtn = document.getElementById('close-cmd');
+    const triggers = document.querySelectorAll('.cmd-trigger');
+
+    if (!modal || !input || !output) return;
+
+    function openModal() {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      input.value = '';
+      input.focus();
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    triggers.forEach(t => t.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    }));
+
+    closeBtn?.addEventListener('click', closeModal);
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        modal.classList.contains('hidden') ? openModal() : closeModal();
+      } else if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      (window as unknown as { termAudio?: { playClick: () => void } }).termAudio?.playClick();
+
+      if (e.key !== 'Enter') return;
+      const raw = input.value.trim();
+      input.value = '';
+      if (!raw) return;
+
+      appendOutput(`❯ ${raw}`, 'text-emerald-400 font-bold');
+
+      const parts = raw.split(' ');
+      const cmd = parts[0].toLowerCase();
+      const arg = parts.slice(1).join(' ').toLowerCase();
+
+      switch (cmd) {
+        case 'help':
+          appendOutput(`Available commands:
+  help              - Display this reference manual
+  mode [light|dark] - Switch display mode (or 'system')
+  theme <color>     - Phosphor profile (emerald, amber, cyan)
+  crt [on|off]      - Toggle CRT scanline shader
+  sound [on|off]    - Toggle mechanical audio synthesis
+  status            - Open live Uptime Kuma dashboard
+  goto <page>       - Navigate (home, portfolio, photos, homelab, resume, contact)
+  cat resume        - Dump summary credentials & certs
+  ping              - Measure edge network latency
+  whoami            - Print active session role
+  clear             - Flush terminal output buffer
+  exit              - Close terminal modal`);
+          break;
+
+        case 'mode':
+          const modeIcon = document.getElementById('theme-mode-icon');
+          const modeLabel = document.getElementById('theme-mode-label');
+
+          if (arg === 'light') {
+            document.documentElement.classList.add('light');
+            localStorage.setItem('theme-mode', 'light');
+            if (modeIcon) modeIcon.textContent = '☼';
+            if (modeLabel) modeLabel.textContent = 'LIGHT';
+            appendOutput(`Interface mode set to: LIGHT`, 'text-emerald-400');
+          } else if (arg === 'dark') {
+            document.documentElement.classList.remove('light');
+            localStorage.setItem('theme-mode', 'dark');
+            if (modeIcon) modeIcon.textContent = '☾';
+            if (modeLabel) modeLabel.textContent = 'DARK';
+            appendOutput(`Interface mode set to: DARK`, 'text-emerald-400');
+          } else if (arg === 'system') {
+            localStorage.removeItem('theme-mode');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (systemDark) {
+              document.documentElement.classList.remove('light');
+            } else {
+              document.documentElement.classList.add('light');
+            }
+            if (modeIcon) modeIcon.textContent = systemDark ? '☾' : '☼';
+            if (modeLabel) modeLabel.textContent = systemDark ? 'DARK' : 'LIGHT';
+            appendOutput(`Interface mode synced with OS system setting`, 'text-emerald-400');
+          } else {
+            appendOutput(`Usage: mode [light | dark | system]`, 'text-rose-400');
+          }
+          break;
+
+        case 'crt':
+          if (arg === 'off') {
+            document.documentElement.classList.remove('crt-active'); const l = document.getElementById('crt-status-label'); if(l){l.textContent="OFF"; l.className="font-bold text-slate-400";}
+            localStorage.setItem('crt-mode', 'false');
+            appendOutput(`CRT scanline filter DISABLED`, 'text-emerald-400');
+          } else {
+            document.documentElement.classList.add('crt-active'); const l = document.getElementById('crt-status-label'); if(l){l.textContent="ON"; l.className="font-bold text-emerald-400";}
+            localStorage.setItem('crt-mode', 'true');
+            appendOutput(`CRT scanline filter ENABLED`, 'text-emerald-400');
+          }
+          break;
+
+        case 'sound':
+          if (arg === 'off') {
+            localStorage.setItem('term-sound', 'false');
+            appendOutput(`Audio feedback MUTED`, 'text-emerald-400');
+          } else {
+            localStorage.setItem('term-sound', 'true');
+            appendOutput(`Mechanical audio ENABLED`, 'text-emerald-400');
+          }
+          break;
+
+        case 'theme':
+          if (['emerald', 'amber', 'cyan'].includes(arg)) {
+            if (arg === 'emerald') {
+              document.documentElement.removeAttribute('data-theme');
+              localStorage.removeItem('site-theme');
+            } else {
+              document.documentElement.setAttribute('data-theme', arg);
+              localStorage.setItem('site-theme', arg);
+            }
+            appendOutput(`Phosphor profile set to: ${arg.toUpperCase()}`, 'text-emerald-400');
+          } else {
+            appendOutput(`Invalid profile. Usage: theme [emerald | amber | cyan]`, 'text-rose-400');
+          }
+          break;
+
+        case 'status':
+          appendOutput(`Opening status.mvoorhies.com...`, 'text-cyan-400');
+          window.open('https://status.mvoorhies.com', '_blank');
+          break;
+
+        case 'goto':
+          const routes: Record<string, string> = {
+            home: '/',
+            portfolio: '/portfolio',
+            photos: '/photos',
+            homelab: '/homelab',
+            resume: '/resume',
+            contact: '/contact'
+          };
+          if (routes[arg]) {
+            appendOutput(`Routing to ${routes[arg]}...`, 'text-cyan-400');
+            setTimeout(() => { window.location.href = routes[arg]; }, 400);
+          } else {
+            appendOutput(`Unknown target '${arg}'. Try: home, portfolio, photos, homelab, resume, contact`, 'text-rose-400');
+          }
+          break;
+
+        case 'cat':
+          if (arg === 'resume') {
+            appendOutput(`Michael Voorhies // Systems & Defensive Security
+- Certifications: CompTIA Security+, Network+, A+
+- Core Stack: Linux (Debian), Proxmox VE, Docker, Suricata NIDS, auditd
+- Education: B.S. Criminology (CMSC Unix Systems Coursework)`);
+          } else {
+            appendOutput(`cat: ${arg || 'file'}: No such file. Try: cat resume`, 'text-rose-400');
+          }
+          break;
+
+        case 'ping':
+          const start = performance.now();
+          fetch(window.location.origin + '/favicon.png', { method: 'HEAD', cache: 'no-store' })
+            .then(res => {
+              const rtt = Math.round(performance.now() - start);
+              appendOutput(`64 bytes from edge-node: icmp_seq=1 ttl=58 time=${rtt}ms (HTTP ${res.status})`, 'text-emerald-400');
+            })
+            .catch(() => appendOutput(`ping: edge connection timed out or unreachable`, 'text-rose-400'));
+          break;
+
+        case 'whoami':
+          appendOutput(`guest@mvoorhies.com (authenticated via Cloudflare Zero Trust)`);
+          break;
+
+        case 'clear':
+          output.innerHTML = '';
+          break;
+
+        case 'exit':
+          closeModal();
+          break;
+
+        default:
+          appendOutput(`command not found: ${cmd}. Type 'help' for options.`, 'text-rose-400');
+      }
+
+      output.scrollTop = output.scrollHeight;
+    });
+
+    function appendOutput(text: string, className = 'text-slate-300') {
+      const line = document.createElement('pre');
+      line.className = `whitespace-pre-wrap font-mono text-xs ${className}`;
+      line.textContent = text;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', setupCommandPalette);
+</script>

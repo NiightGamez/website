@@ -1,0 +1,57 @@
+---
+---
+<canvas id="matrix-canvas" class="fixed inset-0 pointer-events-none z-[-1] opacity-20"></canvas>
+
+<script>
+  const canvas = document.getElementById('matrix-canvas') as HTMLCanvasElement | null;
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#@$%&';
+      const fontSize = 14;
+      let columns = Math.floor(canvas.width / fontSize);
+      let drops = Array(columns).fill(1);
+      let dropColor = '#34d399';
+      let speedInterval = 35;
+      let timer: any = null;
+
+      function draw() {
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = dropColor;
+        ctx.font = `${fontSize}px monospace`;
+
+        for (let i = 0; i < drops.length; i++) {
+          const text = chars[Math.floor(Math.random() * chars.length)];
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+
+      function startLoop(interval: number) {
+        if (timer) clearInterval(timer);
+        timer = setInterval(draw, interval);
+      }
+
+      startLoop(speedInterval);
+
+      // Expose color/speed changer to window for the Easter Egg
+      (window as any).__setMatrixColor = (color: string, interval: number) => {
+        dropColor = color;
+        startLoop(interval);
+      };
+    }
+  }
+</script>

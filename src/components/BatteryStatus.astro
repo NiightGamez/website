@@ -1,0 +1,44 @@
+---
+---
+<span id="power-stat" class="font-mono text-[11px] text-slate-500 hidden sm:inline-flex items-center gap-1">
+  <span class="text-slate-600">PWR:</span>
+  <span id="power-val" class="text-slate-400">DETECTING...</span>
+</span>
+
+<script>
+  function setupBatteryMonitor() {
+    const valElem = document.getElementById('power-val');
+    if (!valElem) return;
+
+    interface BatteryManager {
+      level: number;
+      charging: boolean;
+      addEventListener: (type: string, listener: () => void) => void;
+    }
+
+    const nav = navigator as unknown as { getBattery?: () => Promise<BatteryManager> };
+
+    if (nav.getBattery) {
+      nav.getBattery().then((battery) => {
+        function update() {
+          const level = Math.round(battery.level * 100);
+          const state = battery.charging ? 'AC_CHRG' : 'BATT';
+          if (valElem) {
+            valElem.textContent = `${level}% [${state}]`;
+            valElem.className = battery.charging ? 'text-emerald-400' : (level <= 20 ? 'text-rose-400' : 'text-slate-300');
+          }
+        }
+        update();
+        battery.addEventListener('levelchange', update);
+        battery.addEventListener('chargingchange', update);
+      }).catch(() => {
+        if (valElem) valElem.textContent = 'AC [NOMINAL]';
+      });
+    } else {
+      valElem.textContent = 'AC [NOMINAL]';
+    }
+  }
+
+  setupBatteryMonitor();
+  document.addEventListener('astro:after-swap', setupBatteryMonitor);
+</script>

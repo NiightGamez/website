@@ -1,0 +1,20 @@
+---
+interface Props {
+  currentPage?: string;
+}
+
+const { currentPage = '' } = Astro.props;
+---
+<nav class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-6 border-b border-slate-800 mb-8 sm:mb-12">
+  <a href="/" class="font-mono font-bold text-lg text-emerald-400 hover:text-emerald-300 transition duration-150 flex items-center gap-1.5">
+    <span class="text-slate-500">root@</span>mvoorhies<span class="text-emerald-500">:~$</span><span class="terminal-cursor text-emerald-400 font-normal">_</span>
+  </a>
+  <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-sm font-mono">
+    <a href="/" class={currentPage === 'home' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[home]</a>
+    <a href="/portfolio" class={currentPage === 'portfolio' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[portfolio]</a>
+    <a href="/photos" class={currentPage === 'photos' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[photos]</a>
+    <a href="/homelab" class={currentPage === 'homelab' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[homelab]</a>
+    <a href="/resume" class={currentPage === 'resume' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[resume]</a>
+    <a href="/contact" class={currentPage === 'contact' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[contact]</a>
+  </div>
+</nav>

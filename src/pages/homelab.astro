@@ -1,0 +1,169 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Homelab Architecture & Services" currentPage="homelab">
+  <header class="mb-8 sm:mb-10">
+    <div class="inline-block px-2.5 py-0.5 mb-3 bg-emerald-950/60 border border-emerald-800/60 font-mono text-xs text-emerald-400 rounded">
+      ❯ INFRASTRUCTURE // SELF_HOSTED
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-white leading-tight font-mono">
+      Homelab Architecture & Services
+    </h1>
+    <p class="text-sm sm:text-base text-slate-400 leading-relaxed">
+      Self-hosted virtualization, containerized microservices, federated identity, and hardened network isolation.
+    </p>
+  </header>
+
+  <div class="space-y-8 sm:space-y-10">
+    <!-- Virtualization Core -->
+    <section class="p-5 sm:p-6 bg-slate-900/80 border border-slate-800 rounded-xl card-hover">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2 font-mono">
+          Virtualization Core & Edge Ingress
+        </h2>
+        <span class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800/50">
+          Proxmox VE
+        </span>
+      </div>
+      
+      <div class="bg-slate-950 p-3 sm:p-4 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 overflow-x-auto mb-4 whitespace-nowrap">
+        Internet ──&gt; Cloudflare Zero Trust (WAF/Tunnel) ──&gt; Proxmox LXC ──&gt; Nginx (127.0.0.1:8080)
+      </div>
+
+      <p class="text-sm text-slate-300 leading-relaxed mb-4">
+        Public ingress is decoupled from router forwarding using an encrypted, outbound-only Cloudflare Tunnel (<code class="text-emerald-400 font-mono text-xs">cloudflared</code>). Traffic terminates at an unprivileged Debian LXC container on Proxmox VE, with host-level firewall policies blocking lateral movement to internal subnets.
+      </p>
+
+      <div class="flex flex-wrap gap-2">
+        <span class="px-2.5 py-1 bg-slate-800 text-xs font-mono rounded text-slate-300 border border-slate-700">Proxmox VE</span>
+        <span class="px-2.5 py-1 bg-slate-800 text-xs font-mono rounded text-slate-300 border border-slate-700">Cloudflare Tunnel</span>
+        <span class="px-2.5 py-1 bg-slate-800 text-xs font-mono rounded text-slate-300 border border-slate-700">Unprivileged LXC</span>
+        <span class="px-2.5 py-1 bg-slate-800 text-xs font-mono rounded text-slate-300 border border-slate-700">Tailscale Mesh</span>
+      </div>
+    </section>
+
+    <!-- Services Grid -->
+    <section>
+      <h2 class="text-lg sm:text-xl font-bold text-white mb-2 font-mono">Self-Hosted Services & Workloads</h2>
+      <p class="text-slate-400 text-sm mb-5">
+        Production microservices managed via container runtimes, integrated behind reverse proxies and federated single sign-on:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg card-hover">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-white text-base font-mono">Authentik</span>
+            <span class="text-xs font-mono text-cyan-400">Identity / IAM</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Single Sign-On (SSO), multi-factor authentication (MFA), and OAuth2/OIDC proxy boundaries across self-hosted web interfaces.
+          </p>
+        </div>
+
+        <!-- Uptime Kuma Card with Direct Link -->
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg card-hover flex flex-col justify-between group">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-bold text-white text-base font-mono flex items-center gap-1.5">
+                Uptime Kuma
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              </span>
+              <span class="text-xs font-mono text-emerald-400">Monitoring / SLA</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed mb-3">
+              Automated continuous health tracking for HTTP endpoints, DNS latency, and container uptime.
+            </p>
+          </div>
+          <a 
+            href="https://status.mvoorhies.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="text-xs font-mono text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1 self-start"
+          >
+            <span>View Live Status Dashboard</span>
+            <span>↗</span>
+          </a>
+        </div>
+
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg card-hover">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-white text-base font-mono">Nextcloud</span>
+            <span class="text-xs font-mono text-blue-400">Productivity</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Encrypted file synchronization, document collaboration, and WebDAV endpoints across workstations.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg card-hover">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-white text-base font-mono">Immich</span>
+            <span class="text-xs font-mono text-purple-400">Media Pipeline</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Self-hosted photo/video backup utilizing machine learning pipelines for facial recognition and vector indexing.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg card-hover">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-white text-base font-mono">Gitea</span>
+            <span class="text-xs font-mono text-amber-400">DevOps & Git</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Lightweight Git version control hosting configuration playbooks, scripts, and deployment hooks.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg card-hover">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-white text-base font-mono">Portainer</span>
+            <span class="text-xs font-mono text-sky-400">Containers</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Container stack lifecycle management, Docker compose deployments, and persistent volume tracking.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-lg sm:col-span-2 card-hover">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-white text-base font-mono">Karakeep</span>
+            <span class="text-xs font-mono text-rose-400">Preservation</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Dedicated database-backed media and collection preservation system maintaining resilient local archival stores.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dedicated Hardware -->
+    <section class="p-5 sm:p-6 bg-slate-900/80 border border-slate-800 rounded-xl card-hover">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="text-lg sm:text-xl font-bold text-white font-mono">DNS Sinkhole & Detection Node</h2>
+        <span class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-red-950 text-red-400 border border-red-800/50">
+          Hardware: Pi 5 (8GB)
+        </span>
+      </div>
+
+      <p class="text-sm text-slate-300 leading-relaxed mb-4">
+        Core network services and telemetry experiments run on dedicated physical hardware decoupled from the primary virtualization host:
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+        <div class="p-3.5 sm:p-4 bg-slate-950 rounded-lg border border-slate-800">
+          <span class="text-emerald-400 font-bold block mb-1">Pi-hole DNS Sinkhole</span>
+          <p class="text-slate-400 font-sans leading-relaxed">
+            Network-wide recursive DNS filtering blocking ad-trackers, malware domains, and telemetry beaconing across devices.
+          </p>
+        </div>
+        <div class="p-3.5 sm:p-4 bg-slate-950 rounded-lg border border-slate-800">
+          <span class="text-emerald-400 font-bold block mb-1">Blue-Team Workbench</span>
+          <p class="text-slate-400 font-sans leading-relaxed">
+            Equipped with Linux kernel auditing (<code class="text-emerald-400 font-mono">auditd</code>) and Suricata NIDS for standalone network inspection.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

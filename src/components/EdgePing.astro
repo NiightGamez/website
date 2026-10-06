@@ -1,0 +1,29 @@
+---
+---
+<div class="inline-flex items-center gap-2 px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-md font-mono text-[11px] text-slate-400">
+  <span id="ping-indicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+  <span class="text-slate-500">EDGE:</span>
+  <span id="ping-latency" class="text-emerald-400 font-semibold">measuring...</span>
+</div>
+
+<script>
+  async function measureLatency() {
+    const target = document.getElementById('ping-latency');
+    const dot = document.getElementById('ping-indicator');
+    if (!target || !dot) return;
+
+    const start = performance.now();
+    try {
+      await fetch('/favicon.png', { method: 'HEAD', cache: 'no-store' });
+      const duration = Math.round(performance.now() - start);
+      target.textContent = `${duration}ms`;
+      dot.className = duration < 80 ? 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse' : 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+    } catch {
+      target.textContent = 'TIMEOUT';
+      dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+    }
+  }
+
+  measureLatency();
+  setInterval(measureLatency, 15000);
+</script>

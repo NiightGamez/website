@@ -1,0 +1,133 @@
+---
+---
+<div id="keybindings-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-xl shadow-2xl overflow-hidden font-mono text-xs flex flex-col animate-fade-in">
+    <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+        <span class="text-slate-300 font-bold">KEYBOARD_NAVIGATION_MAP</span>
+      </div>
+      <button id="close-keybinds" class="text-slate-500 hover:text-white transition cursor-pointer">ESC</button>
+    </div>
+
+    <div class="p-4 space-y-3 text-slate-300">
+      <div class="text-[11px] text-slate-500 border-b border-slate-800/80 pb-2">
+        Navigation Sequences & Global Triggers:
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800/60">
+          <span class="text-slate-400">Go to Home</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700 font-bold">g h</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800/60">
+          <span class="text-slate-400">Go to Portfolio</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700 font-bold">g p</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800/60">
+          <span class="text-slate-400">Go to Homelab</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700 font-bold">g l</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800/60">
+          <span class="text-slate-400">Go to Resume</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700 font-bold">g r</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800/60">
+          <span class="text-slate-400">Go to Photos</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700 font-bold">g f</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 rounded bg-slate-950/60 border border-slate-800/60">
+          <span class="text-slate-400">Go to Contact</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700 font-bold">g c</kbd>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800/80 space-y-1 text-[11px]">
+        <div class="flex justify-between items-center text-slate-400">
+          <span>Command Palette</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700">Ctrl + K</kbd>
+        </div>
+        <div class="flex justify-between items-center text-slate-400">
+          <span>Toggle Shortcut Help</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700">?</kbd>
+        </div>
+        <div class="flex justify-between items-center text-slate-400">
+          <span>Dismiss Overlays</span>
+          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700">ESC</kbd>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setupKeybindings() {
+    const modal = document.getElementById('keybindings-modal');
+    const closeBtn = document.getElementById('close-keybinds');
+    if (!modal) return;
+
+    function openModal() {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    closeBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    let lastKey = '';
+    let seqTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    window.addEventListener('keydown', (e) => {
+      const activeEl = document.activeElement;
+      const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || (activeEl as HTMLElement).isContentEditable);
+      if (isInput) return;
+
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        modal.classList.contains('hidden') ? openModal() : closeModal();
+        return;
+      }
+
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+        return;
+      }
+
+      // Handle 'g' prefix sequences
+      if (lastKey === 'g') {
+        const routes: Record<string, string> = {
+          h: '/',
+          p: '/portfolio',
+          l: '/homelab',
+          r: '/resume',
+          f: '/photos',
+          c: '/contact'
+        };
+        const target = routes[e.key.toLowerCase()];
+        if (target) {
+          e.preventDefault();
+          window.location.href = target;
+        }
+        lastKey = '';
+        if (seqTimeout) clearTimeout(seqTimeout);
+        return;
+      }
+
+      if (e.key.toLowerCase() === 'g') {
+        lastKey = 'g';
+        if (seqTimeout) clearTimeout(seqTimeout);
+        seqTimeout = setTimeout(() => { lastKey = ''; }, 1000);
+      }
+    });
+  }
+
+  setupKeybindings();
+  document.addEventListener('astro:after-swap', setupKeybindings);
+</script>

@@ -1,0 +1,107 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Portfolio - Projects & Repositories" currentPage="portfolio">
+  <header class="mb-8 sm:mb-10">
+    <div class="inline-block px-2.5 py-0.5 mb-3 bg-emerald-950/60 border border-emerald-800/60 font-mono text-xs text-emerald-400 rounded">
+      ❯ GITHUB_INGEST // TOPIC:portfolio
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-white leading-tight font-mono">
+      Technical Projects & Repositories
+    </h1>
+    <p class="text-sm sm:text-base text-slate-400 leading-relaxed">
+      Open-source security engineering, systems programming, and utilities synced dynamically from GitHub.
+    </p>
+  </header>
+
+  <div id="projects-container" class="flex flex-col gap-5 sm:gap-6">
+    <div id="loading" class="flex items-center gap-3 text-slate-400 font-mono text-sm py-8">
+      <span class="text-emerald-400">[SCANNING]</span>
+      Fetching public repositories from GitHub...
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  async function loadGithubProjects() {
+    const container = document.getElementById('projects-container');
+    const loading = document.getElementById('loading');
+    const username = 'NiightGamez';
+
+    try {
+      const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      
+      if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+      const repos = await res.json();
+
+      const featured = repos.filter(repo => 
+        Array.isArray(repo.topics) && repo.topics.includes('portfolio')
+      );
+
+      if (loading) loading.remove();
+
+      if (featured.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 text-sm font-mono">
+            [!] No repositories currently tagged with topic: portfolio.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = featured.map((repo, idx) => {
+        const displayTags = (repo.topics || []).filter(t => t !== 'portfolio');
+        
+        return `
+          <article class="p-5 sm:p-6 bg-slate-900/80 border border-slate-800 rounded-xl card-hover animate-fade-in group">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
+              <div>
+                <span class="font-mono text-xs text-emerald-400">REPO_0${idx + 1} //</span>
+                <h2 class="text-lg sm:text-xl font-bold text-white break-words font-mono">
+                  <a href="${repo.html_url}" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400 transition duration-150 inline-flex items-center gap-1.5">
+                    ${repo.name}
+                    <span class="text-xs text-slate-500 font-normal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-150">↗</span>
+                  </a>
+                </h2>
+              </div>
+              ${repo.language ? `
+                <span class="self-start px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-slate-800 text-emerald-400 border border-slate-700">
+                  [lang:${repo.language}]
+                </span>
+              ` : ''}
+            </div>
+
+            <p class="text-sm text-slate-300 leading-relaxed mb-4">
+              ${repo.description || 'No description provided.'}
+            </p>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <a
+                href="${repo.html_url}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1 bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-400 border border-emerald-800/60 text-xs font-mono rounded transition duration-150 inline-flex items-center gap-1"
+              >
+                View on GitHub ↗
+              </a>
+              ${displayTags.map(tag => `
+                <span class="px-2 py-0.5 bg-slate-950 text-xs font-mono rounded text-slate-400 border border-slate-800">
+                  #${tag}
+                </span>
+              `).join('')}
+            </div>
+          </article>
+        `;
+      }).join('');
+
+    } catch (err) {
+      if (loading) {
+        loading.innerHTML = `<span class="text-rose-400 text-sm font-mono">[!] Failed to load repositories from GitHub.</span>`;
+      }
+    }
+  }
+
+  loadGithubProjects();
+</script>

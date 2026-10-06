@@ -1,0 +1,17 @@
+# Build output and runtime directories
+dist/
+.astro/
+node_modules/
+
+# Environment and secret files
+.env
+.env.*
+!.env.example
+
+# OS / Editor logs and temporary files
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.vscode/
+.idea/

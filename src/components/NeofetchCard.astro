@@ -1,0 +1,60 @@
+---
+---
+<div class="p-5 bg-slate-900/70 border border-slate-800 rounded-xl font-mono text-xs mb-8 shadow-xl">
+  <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-800/80 text-slate-500">
+    <span>system_info --user mvoorhies</span>
+    <span class="text-emerald-400 font-bold">NODE: mischief-managed</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+    <!-- Personalized ASCII Emblem -->
+    <pre class="md:col-span-5 text-emerald-400 font-black leading-tight text-[11px] select-none text-center md:text-left">
+    __  ___ _    __
+   /  |/  /| |  / /
+  / /|_/ / | | / / 
+ / /  / /  | |/ /  
+/_/  /_/   |___/   
+===================
+[MICHAEL VOORHIES]
+[@NIIGHTGAMEZ]
+    </pre>
+
+    <!-- Personalized Specs & System Details -->
+    <div class="md:col-span-7 space-y-1 text-slate-300">
+      <p><span class="text-emerald-400 font-bold">mvoorhies</span>@<span class="text-slate-100">mischief-managed</span></p>
+      <p class="text-slate-600">-----------------------------------</p>
+      <p><span class="text-emerald-400">Identity:</span> Michael Voorhies</p>
+      <p><span class="text-emerald-400">Background:</span> Criminology & Unix Systems</p>
+      <p><span class="text-emerald-400">Host:</span> Proxmox VE (LXC ct-102)</p>
+      <p><span class="text-emerald-400">OS:</span> Debian 12 Bookworm (x86_64)</p>
+      <p><span class="text-emerald-400">Certifications:</span> CompTIA Sec+, Net+, A+</p>
+      <p><span class="text-emerald-400">Core Focus:</span> Real-Time Systems • Blue-Team Telemetry</p>
+      <p><span class="text-emerald-400">Ingress:</span> Cloudflare Zero Trust (mvoorhies.com)</p>
+      <p><span class="text-emerald-400">Session Uptime:</span> <span id="nf-uptime" class="text-slate-200">calculating...</span></p>
+
+      <!-- Retro ANSI Color Palette -->
+      <div class="flex gap-1.5 pt-2">
+        <span class="w-3 h-3 rounded-sm bg-slate-800"></span>
+        <span class="w-3 h-3 rounded-sm bg-rose-500"></span>
+        <span class="w-3 h-3 rounded-sm bg-emerald-500"></span>
+        <span class="w-3 h-3 rounded-sm bg-amber-500"></span>
+        <span class="w-3 h-3 rounded-sm bg-cyan-500"></span>
+        <span class="w-3 h-3 rounded-sm bg-purple-500"></span>
+        <span class="w-3 h-3 rounded-sm bg-slate-100"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateUptime() {
+    const epochOrigin = new Date('2026-01-01T00:00:00Z').getTime();
+    const diff = Date.now() - epochOrigin;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const target = document.getElementById('nf-uptime');
+    if (target) target.textContent = `${days} days, ${hours} hours, live`;
+  }
+  updateUptime();
+  document.addEventListener('astro:after-swap', updateUptime);
+</script>

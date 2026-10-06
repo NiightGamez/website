@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NeofetchCard from '../components/NeofetchCard.astro';
+---
+<BaseLayout title="Systems, Infrastructure & Security" currentPage="home">
+  <!-- Hero Section -->
+  <header class="mb-10 sm:mb-12 animate-fade-in delay-100">
+    <div class="inline-block px-2.5 py-0.5 mb-3 bg-emerald-950/60 border border-emerald-800/60 font-mono text-xs text-emerald-400 rounded">
+      ❯ SYSTEM_PROFILE // GENERAL_COMPUTING
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4 text-white leading-tight font-mono scramble-hover glitch-hover">
+      Systems, Networking & Defensive Security
+    </h1>
+    <p class="text-base sm:text-lg text-slate-300 leading-relaxed mb-6">
+      Systems, networking, and defensive security, learned by building and running my own infrastructure. Student, still exploring, always tinkering.
+    </p>
+    <div class="flex flex-wrap gap-2 font-mono">
+      <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-slate-300">CompTIA Security+</span>
+      <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-slate-300">CompTIA Network+</span>
+      <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-slate-300">CompTIA A+</span>
+      <span class="px-2.5 py-1 bg-slate-900 border border-slate-800 text-xs rounded text-emerald-400">Debian / Proxmox</span>
+    </div>
+  </header>
+
+  <!-- Neofetch Terminal Widget -->
+  <section class="mb-8 animate-fade-in delay-150">
+    <NeofetchCard />
+  </section>
+
+  <!-- Featured Areas -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-12 animate-fade-in delay-200">
+    <a href="/portfolio" class="p-6 bg-slate-900/80 border border-slate-800 rounded-xl card-hover flex flex-col justify-between group">
+      <div>
+        <div class="font-mono text-xs text-emerald-400 mb-1">01 // REPOSITORIES</div>
+        <h2 class="text-xl font-bold mb-2 text-white flex items-center justify-between font-mono">
+          <span class="glitch-hover">Projects <span>Projects & Labs</span> Labs</span>
+          <span class="text-emerald-400 group-hover:translate-x-1 transition-transform duration-200 text-sm">→</span>
+        </h2>
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Real-time scheduling algorithms, Unix automation, host auditing, and security lab tooling synced directly from GitHub.
+        </p>
+      </div>
+    </a>
+
+    <a href="/homelab" class="p-6 bg-slate-900/80 border border-slate-800 rounded-xl card-hover flex flex-col justify-between group">
+      <div>
+        <div class="font-mono text-xs text-emerald-400 mb-1">02 // INFRASTRUCTURE</div>
+        <h2 class="text-xl font-bold mb-2 text-white flex items-center justify-between font-mono">
+          <span class="glitch-hover">Homelab Architecture</span>
+          <span class="text-emerald-400 group-hover:translate-x-1 transition-transform duration-200 text-sm">→</span>
+        </h2>
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Virtualization with Proxmox VE, container orchestration, identity management, and secure Cloudflare ingress.
+        </p>
+      </div>
+    </a>
+  </section>
+
+  <!-- Transparency Note -->
+  <section class="p-5 bg-slate-900/40 border border-slate-800/80 rounded-xl text-xs text-slate-400 leading-relaxed font-mono animate-fade-in delay-300">
+    <div class="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+      <span>// COLOPHON & TRANSPARENCY</span>
+    </div>
+    <p class="font-sans text-slate-400 text-xs leading-relaxed">
+      This site acts as a live directory and personal workbench. The layout, styling, and boilerplate components were scaffolded with AI assistance, while the underlying virtualization, network security rules, and engineering projects reflect authentic, hands-on implementations.
+    </p>
+  </section>
+</BaseLayout>

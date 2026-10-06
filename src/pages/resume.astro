@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Resume - Technical Profile" currentPage="resume">
+  <header class="mb-8 sm:mb-10">
+    <div class="inline-block px-2.5 py-0.5 mb-3 bg-emerald-950/60 border border-emerald-800/60 font-mono text-xs text-emerald-400 rounded">
+      ❯ CURRICULUM_VITAE // SYS_ADMIN_SECURITY
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2 text-white leading-tight font-mono">Technical Resume</h1>
+    <p class="text-slate-400 text-sm">Systems Administration | Networking | Security & Criminology</p>
+  </header>
+
+  <!-- Certifications -->
+  <section class="mb-8 sm:mb-10">
+    <h2 class="text-sm sm:text-base font-mono font-bold text-emerald-400 uppercase tracking-wider mb-3 sm:mb-4">// Certifications</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+        <div class="font-bold text-white text-sm font-mono">CompTIA Security+</div>
+        <div class="text-xs text-slate-400 mt-1">Security Concepts & Controls</div>
+      </div>
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+        <div class="font-bold text-white text-sm font-mono">CompTIA Network+</div>
+        <div class="text-xs text-slate-400 mt-1">Networking Protocols & Topologies</div>
+      </div>
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+        <div class="font-bold text-white text-sm font-mono">CompTIA A+</div>
+        <div class="text-xs text-slate-400 mt-1">Hardware & OS Operations</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Technical Skills -->
+  <section class="mb-8 sm:mb-10">
+    <h2 class="text-sm sm:text-base font-mono font-bold text-emerald-400 uppercase tracking-wider mb-3 sm:mb-4">// Technical Proficiencies</h2>
+    <div class="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-mono">
+      <p><strong class="text-white">Systems & Virtualization:</strong> Linux (Debian, Ubuntu, Raspberry Pi OS), Proxmox VE, Docker & Docker Compose, Portainer, unprivileged LXC isolation</p>
+      <p><strong class="text-white">Networking & Self-Hosted:</strong> Reverse proxies (Nginx), Cloudflare Zero Trust Tunnels, Pi-hole (DNS), Authentik (SSO/IAM), Nextcloud, Uptime Kuma</p>
+      <p><strong class="text-white">Programming & Unix:</strong> POSIX Shell (Bash), C/POSIX systems programming, AWK, Sed, Git version control</p>
+      <p><strong class="text-white">Security & Auditing:</strong> Linux kernel auditing (auditd), Suricata NIDS, packet analysis (tcpdump, Wireshark), MITRE ATT&CK</p>
+      <p><strong class="text-white">Analytical Background:</strong> Investigative methodologies, evidence integrity, criminal behavioral analysis</p>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <section class="mb-8 sm:mb-10">
+    <h2 class="text-sm sm:text-base font-mono font-bold text-emerald-400 uppercase tracking-wider mb-3 sm:mb-4">// Selected Projects</h2>
+    <div class="space-y-3 sm:space-y-4">
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1.5">
+          <a href="https://github.com/NiightGamez/edf-car-project" target="_blank" rel="noopener noreferrer" class="font-bold text-white hover:text-emerald-400 transition flex items-center gap-1 text-sm sm:text-base font-mono">
+            Real-Time Systems: EDF Vehicle Task Scheduler
+            <span class="text-xs text-slate-500 font-normal">↗</span>
+          </a>
+          <span class="text-xs font-mono text-blue-400">[CMSC Unix Systems]</span>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Designed an Earliest Deadline First (EDF) dynamic scheduling model for vehicle subcomponents. Simulated dynamic CPU prioritization, deadline guarantees, and resource allocation under heavy task load in a Unix environment.
+        </p>
+      </div>
+
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1.5">
+          <span class="font-bold text-white text-sm sm:text-base font-mono">System Auditing: Linux Canary Filesystem Trap</span>
+          <span class="text-xs font-mono text-emerald-400">[auditd / Linux]</span>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Configured kernel-level tripwires using Linux auditd to capture file-access telemetry (openat syscalls) and track origin session logins upon unauthorized access.
+        </p>
+      </div>
+
+      <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1.5">
+          <span class="font-bold text-white text-sm sm:text-base font-mono">Network Inspection: Custom Suricata Signatures</span>
+          <span class="text-xs font-mono text-cyan-400">[Suricata / Docker]</span>
+        </div>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Authored Layer-7 inspection signatures to detect web exploitation patterns across container networks, accounting for URL-encoding evasion.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education -->
+  <section>
+    <h2 class="text-sm sm:text-base font-mono font-bold text-emerald-400 uppercase tracking-wider mb-3 sm:mb-4">// Education</h2>
+    <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg card-hover">
+      <div class="font-bold text-white text-sm sm:text-base mb-1 font-mono">Bachelor of Science in Criminology</div>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Interdisciplinary foundation in investigative processes, behavioral analysis, and statutory frameworks. Complementary coursework in Computer Science (CMSC) Unix Systems Programming and Real-Time Architectures.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

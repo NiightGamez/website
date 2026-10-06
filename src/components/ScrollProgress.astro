@@ -1,0 +1,41 @@
+---
+---
+<div id="scroll-buffer-bar" class="fixed bottom-3 right-4 z-40 font-mono text-[10px] text-slate-400 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded border border-slate-800 pointer-events-none select-none hidden sm:flex items-center gap-1.5 shadow-lg">
+  <span class="text-slate-500">BUFFER:</span>
+  <span id="buffer-blocks" class="text-emerald-400 font-bold tracking-tighter">░░░░░░░░░░</span>
+  <span id="buffer-pct" class="text-slate-400 w-7 text-right">0%</span>
+</div>
+
+<script>
+  function setupScrollBuffer() {
+    const bar = document.getElementById('scroll-buffer-bar');
+    const blocksElem = document.getElementById('buffer-blocks');
+    const pctElem = document.getElementById('buffer-pct');
+    if (!bar || !blocksElem || !pctElem) return;
+
+    function onScroll() {
+      const scrollH = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollH <= 50) {
+        bar.style.display = 'none';
+        return;
+      }
+      bar.style.display = 'flex';
+
+      const progress = Math.min(Math.max(window.scrollY / scrollH, 0), 1);
+      const pct = Math.round(progress * 100);
+
+      const totalBlocks = 10;
+      const filledBlocks = Math.round(progress * totalBlocks);
+      const emptyBlocks = totalBlocks - filledBlocks;
+
+      blocksElem.textContent = '█'.repeat(filledBlocks) + '░'.repeat(emptyBlocks);
+      pctElem.textContent = `${pct}%`;
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  setupScrollBuffer();
+  document.addEventListener('astro:after-swap', setupScrollBuffer);
+</script>

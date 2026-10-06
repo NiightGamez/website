@@ -1,0 +1,121 @@
+---
+---
+<div class="flex items-center justify-between font-mono text-xs text-slate-500 pb-3 border-b border-slate-800/80 mb-6">
+  <!-- Live Health Probe -->
+  <div class="flex items-center gap-2">
+    <span id="health-indicator" class="relative flex h-2 w-2">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+    </span>
+    <a 
+      href="https://status.mvoorhies.com" 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      id="health-text" 
+      class="text-emerald-400 hover:underline flex items-center gap-1"
+      title="View Live Uptime Kuma Status Page"
+    >
+      SYS_STAT: CONNECTING...
+      <span class="text-[10px] text-slate-500">↗</span>
+    </a>
+  </div>
+
+  <!-- Header Controls: CRT Toggle, Mode Toggle, and CLI Trigger -->
+  <div class="flex items-center gap-2">
+    <!-- CRT Shader Toggle Button -->
+    <button 
+      id="crt-toggle-btn" 
+      class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 hover:border-emerald-500/50 text-slate-400 hover:text-emerald-400 transition text-[11px] flex items-center gap-1 cursor-pointer"
+      title="Toggle CRT Scanline Overlay"
+    >
+      <span class="text-slate-600">CRT:</span>
+      <span id="crt-status-label" class="font-bold">OFF</span>
+    </button>
+
+    <!-- Light / Dark Mode Toggle Button -->
+    <button 
+      id="theme-mode-btn" 
+      class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-400 text-slate-400 transition text-[11px] flex items-center gap-1.5 cursor-pointer"
+      title="Toggle Light / Dark Mode"
+    >
+      <span id="theme-mode-icon">◐</span>
+      <span id="theme-mode-label" class="hidden sm:inline">MODE</span>
+    </button>
+
+    <!-- Terminal Command Palette Trigger -->
+    <button 
+      class="cmd-trigger px-2 py-0.5 rounded bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:text-emerald-400 text-slate-400 transition text-[11px] flex items-center gap-1.5 cursor-pointer"
+      title="Open Terminal (Ctrl+K)"
+    >
+      <span>[CMD]</span>
+      <kbd class="text-[10px] bg-slate-950 px-1 py-0.2 rounded border border-slate-800 text-slate-500">Ctrl+K</kbd>
+    </button>
+  </div>
+</div>
+
+<script>
+  function setupHeader() {
+    // 1. Health Probe
+    const textElem = document.getElementById('health-text');
+    const indicator = document.getElementById('health-indicator');
+    if (textElem && indicator) {
+      const start = performance.now();
+      fetch(window.location.origin + '/favicon.png', { method: 'HEAD', cache: 'no-store' })
+        .then(res => {
+          const latency = Math.round(performance.now() - start);
+          if (res.ok) {
+            textElem.innerHTML = `SYS_STAT: ONLINE // ${latency}ms <span class="text-[10px] text-slate-500">↗</span>`;
+            textElem.className = 'text-emerald-400 hover:underline flex items-center gap-1';
+          } else {
+            textElem.innerHTML = `SYS_STAT: DEGRADED (HTTP ${res.status}) <span class="text-[10px] text-slate-500">↗</span>`;
+            textElem.className = 'text-amber-400 hover:underline flex items-center gap-1';
+          }
+        })
+        .catch(() => {
+          textElem.innerHTML = `SYS_STAT: OFFLINE // UNREACHABLE <span class="text-[10px] text-slate-500">↗</span>`;
+          textElem.className = 'text-rose-400 hover:underline flex items-center gap-1';
+          indicator.innerHTML = '<span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>';
+        });
+    }
+
+    // 2. CRT Toggle Handler
+    const crtBtn = document.getElementById('crt-toggle-btn');
+    const crtLabel = document.getElementById('crt-status-label');
+
+    function syncCRTState() {
+      const isCrt = document.documentElement.classList.contains('crt-active');
+      if (crtLabel) {
+        crtLabel.textContent = isCrt ? 'ON' : 'OFF';
+        crtLabel.className = isCrt ? 'font-bold text-emerald-400' : 'font-bold text-slate-400';
+      }
+    }
+    syncCRTState();
+
+    crtBtn?.addEventListener('click', () => {
+      const isNowActive = document.documentElement.classList.toggle('crt-active');
+      localStorage.setItem('crt-mode', isNowActive ? 'true' : 'false');
+      syncCRTState();
+    });
+
+    // 3. Light / Dark Mode Toggle
+    const modeBtn = document.getElementById('theme-mode-btn');
+    const modeIcon = document.getElementById('theme-mode-icon');
+    const modeLabel = document.getElementById('theme-mode-label');
+
+    function syncThemeButton() {
+      const isLight = document.documentElement.classList.contains('light');
+      if (modeIcon) modeIcon.textContent = isLight ? '☼' : '☾';
+      if (modeLabel) modeLabel.textContent = isLight ? 'LIGHT' : 'DARK';
+    }
+    syncThemeButton();
+
+    modeBtn?.addEventListener('click', () => {
+      const isLight = document.documentElement.classList.toggle('light');
+      localStorage.setItem('theme-mode', isLight ? 'light' : 'dark');
+      syncThemeButton();
+    });
+  }
+
+  setupHeader();
+  document.addEventListener('astro:after-swap', setupHeader);
+</script>

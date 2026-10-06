@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 - Inode Not Found" currentPage="404" description="404 Error: The requested inode or sector could not be located.">
+  <div class="py-12 sm:py-20 flex flex-col items-center justify-center font-mono text-center">
+    
+    <!-- Panic Status Badge -->
+    <div class="inline-flex items-center gap-2 px-3 py-1 mb-6 bg-rose-950/60 border border-rose-800/80 text-rose-400 text-xs rounded-full animate-pulse">
+      <span class="inline-block w-2 h-2 rounded-full bg-rose-500"></span>
+      KERNEL_PANIC // VFS_LOOKUP_FAILED
+    </div>
+
+    <!-- Error Code -->
+    <h1 class="text-7xl sm:text-8xl font-black text-white tracking-tighter mb-4 font-mono select-none">
+      404
+    </h1>
+
+    <div class="text-slate-400 text-sm sm:text-base max-w-lg mb-8 leading-relaxed font-sans">
+      The requested route or filesystem node does not exist in the root table. The sector was moved, deleted, or never allocated.
+    </div>
+
+    <!-- Terminal Panic Trace Window -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 sm:p-5 max-w-lg w-full text-left font-mono text-xs mb-8 shadow-2xl">
+      <div class="text-slate-500 pb-2 mb-3 border-b border-slate-800 flex items-center justify-between">
+        <span>crash_dump.log</span>
+        <span class="text-rose-400">[SIGSEGV]</span>
+      </div>
+      <div class="space-y-1 text-slate-400">
+        <p><span class="text-rose-400">E_FAULT:</span> 0x00007fff94a2c000 (INODE_UNMAPPED)</p>
+        <p><span class="text-emerald-400">CALL_ORIGIN:</span> vfs_lookup() -> null pointer</p>
+        <p><span class="text-slate-500">RECOVERY:</span> Return to runlevel 3 or re-route ingress</p>
+      </div>
+    </div>
+
+    <!-- Recovery Actions -->
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a 
+        href="/" 
+        class="px-5 py-2.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 text-xs font-mono font-bold rounded-lg transition flex items-center gap-2"
+      >
+        <span>❯ cd /home</span>
+      </a>
+      <a 
+        href="/portfolio" 
+        class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono rounded-lg transition"
+      >
+        View Projects ↗
+      </a>
+    </div>
+
+  </div>
+</BaseLayout>
