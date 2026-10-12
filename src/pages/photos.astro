@@ -618,3 +618,48 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   initLiveGallery();
   document.addEventListener('astro:after-swap', initLiveGallery);
 </script>
+
+
+<script>
+  function setupLightboxDismiss() {
+    const modal = document.getElementById("lightbox-modal");
+    const closeBtn = document.getElementById("lightbox-close");
+    const innerContent = modal ? modal.querySelector(".relative, [data-lightbox-content]") : null;
+
+    if (!modal) return;
+
+    function close() {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      const img = modal.querySelector("img");
+      if (img) img.src = "";
+    }
+
+    // 1. Explicit button trigger
+    closeBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      close();
+    });
+
+    // 2. Click or tap outside (backdrop)
+    modal.addEventListener("click", (e) => {
+      if (innerContent) {
+        if (!innerContent.contains(e.target)) {
+          close();
+        }
+      } else if (e.target === modal) {
+        close();
+      }
+    });
+
+    // 3. Escape key listener
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !modal.classList.contains("hidden")) {
+        close();
+      }
+    });
+  }
+
+  setupLightboxDismiss();
+  document.addEventListener("astro:after-swap", setupLightboxDismiss);
+</script>
