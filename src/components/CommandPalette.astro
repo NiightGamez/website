@@ -92,17 +92,24 @@
         case 'help':
           appendOutput(`Available commands:
   help              - Display this reference manual
+  tools / hash      - Launch in-browser SHA checksum verifier
+  goto <page>       - Navigate (home, portfolio, photos, homelab, tools, resume, contact)
   mode [light|dark] - Switch display mode (or 'system')
   theme <color>     - Phosphor profile (emerald, amber, cyan)
   crt [on|off]      - Toggle CRT scanline shader
-  sound [on|off]    - Toggle mechanical audio synthesis
   status            - Open live Uptime Kuma dashboard
-  goto <page>       - Navigate (home, portfolio, photos, homelab, resume, contact)
   cat resume        - Dump summary credentials & certs
   ping              - Measure edge network latency
   whoami            - Print active session role
   clear             - Flush terminal output buffer
   exit              - Close terminal modal`);
+          break;
+
+        case 'tools':
+        case 'hash':
+        case 'verify':
+          appendOutput(`Routing to Web Crypto Checksum Tool (/tools/hash)...`, 'text-cyan-400');
+          setTimeout(() => { window.location.href = '/tools/hash'; }, 400);
           break;
 
         case 'mode':
@@ -138,24 +145,17 @@
           break;
 
         case 'crt':
+          const crtLabel = document.getElementById('crt-status-label');
           if (arg === 'off') {
-            document.documentElement.classList.remove('crt-active'); const l = document.getElementById('crt-status-label'); if(l){l.textContent="OFF"; l.className="font-bold text-slate-400";}
+            document.documentElement.classList.remove('crt-active');
             localStorage.setItem('crt-mode', 'false');
+            if (crtLabel) { crtLabel.textContent = 'OFF'; crtLabel.className = 'font-bold text-slate-400'; }
             appendOutput(`CRT scanline filter DISABLED`, 'text-emerald-400');
           } else {
-            document.documentElement.classList.add('crt-active'); const l = document.getElementById('crt-status-label'); if(l){l.textContent="ON"; l.className="font-bold text-emerald-400";}
+            document.documentElement.classList.add('crt-active');
             localStorage.setItem('crt-mode', 'true');
+            if (crtLabel) { crtLabel.textContent = 'ON'; crtLabel.className = 'font-bold text-emerald-400'; }
             appendOutput(`CRT scanline filter ENABLED`, 'text-emerald-400');
-          }
-          break;
-
-        case 'sound':
-          if (arg === 'off') {
-            localStorage.setItem('term-sound', 'false');
-            appendOutput(`Audio feedback MUTED`, 'text-emerald-400');
-          } else {
-            localStorage.setItem('term-sound', 'true');
-            appendOutput(`Mechanical audio ENABLED`, 'text-emerald-400');
           }
           break;
 
@@ -185,6 +185,8 @@
             portfolio: '/portfolio',
             photos: '/photos',
             homelab: '/homelab',
+            tools: '/tools/hash',
+            hash: '/tools/hash',
             resume: '/resume',
             contact: '/contact'
           };
@@ -192,7 +194,7 @@
             appendOutput(`Routing to ${routes[arg]}...`, 'text-cyan-400');
             setTimeout(() => { window.location.href = routes[arg]; }, 400);
           } else {
-            appendOutput(`Unknown target '${arg}'. Try: home, portfolio, photos, homelab, resume, contact`, 'text-rose-400');
+            appendOutput(`Unknown target '${arg}'. Try: home, portfolio, photos, homelab, tools, resume, contact`, 'text-rose-400');
           }
           break;
 
@@ -246,4 +248,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', setupCommandPalette);
+  document.addEventListener('astro:after-swap', setupCommandPalette);
 </script>

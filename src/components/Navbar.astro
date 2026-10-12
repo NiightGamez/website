@@ -1,20 +1,78 @@
 ---
-interface Props {
-  currentPage?: string;
-}
-
-const { currentPage = '' } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
-<nav class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-6 border-b border-slate-800 mb-8 sm:mb-12">
-  <a href="/" class="font-mono font-bold text-lg text-emerald-400 hover:text-emerald-300 transition duration-150 flex items-center gap-1.5">
-    <span class="text-slate-500">root@</span>mvoorhies<span class="text-emerald-500">:~$</span><span class="terminal-cursor text-emerald-400 font-normal">_</span>
-  </a>
-  <div class="flex flex-wrap items-center gap-4 sm:gap-6 text-sm font-mono">
-    <a href="/" class={currentPage === 'home' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[home]</a>
-    <a href="/portfolio" class={currentPage === 'portfolio' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[portfolio]</a>
-    <a href="/photos" class={currentPage === 'photos' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[photos]</a>
-    <a href="/homelab" class={currentPage === 'homelab' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[homelab]</a>
-    <a href="/resume" class={currentPage === 'resume' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[resume]</a>
-    <a href="/contact" class={currentPage === 'contact' ? "text-emerald-400 font-semibold" : "text-slate-400 hover:text-white transition duration-150"}>[contact]</a>
+<nav class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-mono text-slate-400 mt-4 mb-8">
+  <a href="/" class={`hover:text-emerald-400 transition ${currentPath === '/' ? 'text-emerald-400 font-bold' : ''}`}>[home]</a>
+  <a href="/portfolio" class={`hover:text-emerald-400 transition ${currentPath === '/portfolio' ? 'text-emerald-400 font-bold' : ''}`}>[portfolio]</a>
+  <a href="/photos" class={`hover:text-emerald-400 transition ${currentPath === '/photos' ? 'text-emerald-400 font-bold' : ''}`}>[photos]</a>
+  
+  <!-- Homelab with separate mobile tap toggle & desktop hover -->
+  <div class="relative group inline-flex items-center" id="homelab-nav-group">
+    <a 
+      href="/homelab" 
+      class={`hover:text-emerald-400 transition py-1 ${currentPath.startsWith('/homelab') || currentPath.startsWith('/tools') ? 'text-emerald-400 font-bold' : ''}`}
+    >
+      [homelab]
+    </a>
+    <button 
+      type="button" 
+      id="tools-toggle-btn" 
+      aria-label="Toggle tools menu" 
+      class="px-1 py-1 text-slate-500 hover:text-emerald-400 transition focus:outline-none cursor-pointer"
+    >
+      <span id="tools-arrow" class="text-[9px] inline-block transition-transform duration-150 group-hover:rotate-180">▾</span>
+    </button>
+
+    <!-- Sub-menu drawer -->
+    <div 
+      id="tools-dropdown" 
+      class="absolute left-0 top-full pt-1 hidden group-hover:block z-50 min-w-[140px]"
+    >
+      <div class="bg-slate-950/95 border border-slate-800 rounded p-1 shadow-2xl backdrop-blur font-mono text-xs">
+        <a href="/tools/hash" class="block px-2 py-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-900 rounded transition">
+          ▸ hash_tool
+        </a>
+      </div>
+    </div>
   </div>
+
+  <a href="/resume" class={`hover:text-emerald-400 transition ${currentPath === '/resume' ? 'text-emerald-400 font-bold' : ''}`}>[resume]</a>
+  <a href="/contact" class={`hover:text-emerald-400 transition ${currentPath === '/contact' ? 'text-emerald-400 font-bold' : ''}`}>[contact]</a>
 </nav>
+
+<script>
+  function setupNavToggle() {
+    const btn = document.getElementById('tools-toggle-btn');
+    const menu = document.getElementById('tools-dropdown');
+    const arrow = document.getElementById('tools-arrow');
+    const group = document.getElementById('homelab-nav-group');
+
+    if (!btn || !menu || !arrow || !group) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = !menu.classList.contains('hidden') && !menu.classList.contains('group-hover:block');
+      
+      if (isVisible) {
+        menu.classList.add('hidden');
+        menu.classList.remove('block');
+        arrow.classList.remove('rotate-180');
+      } else {
+        menu.classList.remove('hidden');
+        menu.classList.add('block');
+        arrow.classList.add('rotate-180');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!group.contains(e.target as Node)) {
+        menu.classList.add('hidden');
+        menu.classList.remove('block');
+        arrow.classList.remove('rotate-180');
+      }
+    });
+  }
+
+  setupNavToggle();
+  document.addEventListener('astro:after-swap', setupNavToggle);
+</script>

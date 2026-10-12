@@ -1,0 +1,187 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Cryptographic Checksum & Hash Verifier | Michael Voorhies">
+  <main class="max-w-4xl mx-auto px-4 py-12 font-mono">
+    <!-- Header -->
+    <div class="border border-slate-800 bg-slate-900/60 rounded-lg p-6 mb-8 backdrop-blur shadow-xl">
+      <div class="flex items-center gap-2 text-xs text-emerald-400 mb-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>CLIENT_ENGINE // WEB_CRYPTO_API</span>
+      </div>
+      <h1 class="text-2xl font-bold text-white mb-2">Cryptographic Hash & Integrity Verifier</h1>
+      <p class="text-slate-400 text-sm leading-relaxed">
+        Zero-upload in-browser verification. Files are processed entirely in memory via <code class="text-emerald-400">crypto.subtle</code>. Decrypted telemetry and payloads never leave your local environment.
+      </p>
+    </div>
+
+    <!-- Drop Zone -->
+    <div 
+      id="drop-zone"
+      class="border-2 border-dashed border-slate-700 hover:border-emerald-500/80 bg-slate-900/30 rounded-lg p-10 text-center transition cursor-pointer mb-8 group"
+    >
+      <input type="file" id="file-input" class="hidden" />
+      <div class="text-slate-400 group-hover:text-slate-200 transition">
+        <svg class="w-10 h-10 mx-auto mb-3 text-slate-500 group-hover:text-emerald-400 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <span class="text-sm font-semibold block text-slate-300">Drop artifact here or click to browse</span>
+        <span class="text-xs text-slate-500 mt-1 block">ISO, binaries, scripts, or raw capture archives (Client memory only)</span>
+      </div>
+      <div id="file-meta" class="hidden mt-4 pt-4 border-t border-slate-800 text-left text-xs text-slate-300">
+        <div class="flex justify-between items-center">
+          <span id="file-name" class="text-emerald-400 font-semibold truncate max-w-md"></span>
+          <span id="file-size" class="text-slate-400"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checksum Verification Box -->
+    <div class="border border-slate-800 bg-slate-900/40 rounded-lg p-5 mb-8">
+      <label class="block text-xs uppercase text-slate-400 mb-2 font-semibold tracking-wider">
+        Integrity Verification (Compare Hash)
+      </label>
+      <input 
+        type="text" 
+        id="expected-hash" 
+        placeholder="Paste expected SHA-256 or SHA-512 checksum from vendor..."
+        class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-emerald-500 transition"
+      />
+      <div id="match-status" class="hidden mt-3 text-xs p-2.5 rounded border"></div>
+    </div>
+
+    <!-- Hash Results Output -->
+    <div class="space-y-4">
+      <!-- SHA-256 -->
+      <div class="border border-slate-800 bg-slate-900/60 rounded-lg p-4">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">SHA-256</span>
+          <button data-target="hash-sha256" class="copy-btn text-xs text-slate-400 hover:text-emerald-400 transition cursor-pointer">COPY</button>
+        </div>
+        <div id="hash-sha256" class="text-xs text-slate-300 font-mono break-all select-all py-1">Awaiting payload...</div>
+      </div>
+
+      <!-- SHA-512 -->
+      <div class="border border-slate-800 bg-slate-900/60 rounded-lg p-4">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">SHA-512</span>
+          <button data-target="hash-sha512" class="copy-btn text-xs text-slate-400 hover:text-emerald-400 transition cursor-pointer">COPY</button>
+        </div>
+        <div id="hash-sha512" class="text-xs text-slate-300 font-mono break-all select-all py-1">Awaiting payload...</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const fileMeta = document.getElementById('file-meta');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const sha256Out = document.getElementById('hash-sha256');
+    const sha512Out = document.getElementById('hash-sha512');
+    const expectedInput = document.getElementById('expected-hash') as HTMLInputElement;
+    const matchStatus = document.getElementById('match-status');
+
+    let currentSha256 = '';
+    let currentSha512 = '';
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+
+    dropZone?.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-emerald-500');
+    });
+
+    dropZone?.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-emerald-500');
+    });
+
+    dropZone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-emerald-500');
+      if (e.dataTransfer?.files.length) {
+        processFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileInput?.addEventListener('change', () => {
+      if (fileInput.files?.length) {
+        processFile(fileInput.files[0]);
+      }
+    });
+
+    async function hashBuffer(buffer: ArrayBuffer, algorithm: string): Promise<string> {
+      const hashBuffer = await crypto.subtle.digest(algorithm, buffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function formatBytes(bytes: number): string {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async function processFile(file: File) {
+      if (fileName && fileSize && fileMeta) {
+        fileName.textContent = file.name;
+        fileSize.textContent = formatBytes(file.size);
+        fileMeta.classList.remove('hidden');
+      }
+
+      if (sha256Out) sha256Out.textContent = 'COMPUTING [SHA-256]...';
+      if (sha512Out) sha512Out.textContent = 'COMPUTING [SHA-512]...';
+
+      try {
+        const buffer = await file.arrayBuffer();
+        currentSha256 = await hashBuffer(buffer, 'SHA-256');
+        currentSha512 = await hashBuffer(buffer, 'SHA-512');
+
+        if (sha256Out) sha256Out.textContent = currentSha256;
+        if (sha512Out) sha512Out.textContent = currentSha512;
+        evaluateMatch();
+      } catch (err) {
+        if (sha256Out) sha256Out.textContent = 'ERROR COMPUTING HASH';
+      }
+    }
+
+    expectedInput?.addEventListener('input', evaluateMatch);
+
+    function evaluateMatch() {
+      if (!matchStatus) return;
+      const val = expectedInput.value.trim().toLowerCase();
+      if (!val || (!currentSha256 && !currentSha512)) {
+        matchStatus.classList.add('hidden');
+        return;
+      }
+
+      matchStatus.classList.remove('hidden');
+      if (val === currentSha256 || val === currentSha512) {
+        matchStatus.className = 'mt-3 text-xs p-2.5 rounded border border-emerald-600/60 bg-emerald-950/40 text-emerald-400 font-bold';
+        matchStatus.textContent = `[MATCH VERIFIED] Checksum successfully verified against computed payload.`;
+      } else {
+        matchStatus.className = 'mt-3 text-xs p-2.5 rounded border border-red-600/60 bg-red-950/40 text-red-400 font-bold';
+        matchStatus.textContent = `[MISMATCH] Checksum does not match the active computed hash.`;
+      }
+    }
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const targetId = (e.currentTarget as HTMLElement).getAttribute('data-target');
+        const text = document.getElementById(targetId || '')?.textContent;
+        if (text && !text.includes('Awaiting') && !text.includes('COMPUTING')) {
+          navigator.clipboard.writeText(text);
+          const original = (e.currentTarget as HTMLElement).textContent;
+          (e.currentTarget as HTMLElement).textContent = 'COPIED';
+          setTimeout(() => {
+            (e.currentTarget as HTMLElement).textContent = original;
+          }, 1500);
+        }
+      });
+    });
+  </script>
+</BaseLayout>
