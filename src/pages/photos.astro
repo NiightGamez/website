@@ -3,46 +3,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout title="Photography & Visual Work" currentPage="photos">
-  <header class="mb-8 animate-fade-in">
+  <header class="mb-8 animate-fade-in max-w-4xl mx-auto">
     <div class="inline-block px-2.5 py-0.5 mb-3 bg-emerald-950/60 border border-emerald-800/60 font-mono text-xs text-emerald-400 rounded">
-      PORTFOLIO // UPDATED CONTINUOUSLY
+      PORTFOLIO // LIVE IMMICH ARCHIVE
     </div>
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 text-white leading-tight font-mono">
-      Photography & Visual Studies
+      Photography &amp; Visual Studies
     </h1>
-    <p class="text-sm sm:text-base text-slate-300 leading-relaxed font-sans max-w-2xl">
-      A collection of landscape, environmental, and observational photography captured primarily with Canon glass. Focused on natural textures, low light, and quiet framing.
+    <p class="text-sm sm:text-base text-slate-300 leading-relaxed font-sans">
+      A collection of landscape, environmental, and observational photography. Focused on natural textures, low light, and quiet framing.
     </p>
   </header>
 
-  <!-- Live Filter & Sort Toolbar -->
-  <section class="mb-8 p-3 bg-slate-900/60 border border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
-    <div class="flex flex-wrap items-center gap-1.5" id="filter-controls">
-      <span class="text-slate-500 mr-1 text-[11px]">FILTER:</span>
-      <button data-filter="all" class="filter-btn px-2.5 py-1 rounded bg-emerald-950 border border-emerald-700 text-emerald-400 transition cursor-pointer">ALL</button>
-      <button data-filter="lowlight" class="filter-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition cursor-pointer">LOW LIGHT (ISO 800+)</button>
-      <button data-filter="canon" class="filter-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition cursor-pointer">CANON OPTICS</button>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <span class="text-slate-500 text-[11px]">SORT:</span>
-      <button id="sort-toggle-btn" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition cursor-pointer flex items-center gap-1">
-        <span id="sort-label">NEWEST</span>
-        <span id="sort-icon">↓</span>
+  <!-- Live Dynamic Filter Bar -->
+  <div class="flex flex-wrap items-center justify-between gap-4 p-3 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur mb-8 max-w-4xl mx-auto">
+    <div id="filter-bar" class="flex flex-wrap items-center gap-2">
+      <span class="text-xs font-mono text-slate-500 uppercase tracking-wider mr-2">Filter:</span>
+      <button data-filter="all" class="filter-btn active px-3 py-1 text-xs font-mono rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-pointer">
+        ALL
       </button>
     </div>
-  </section>
+    <div class="flex items-center gap-2 text-xs font-mono text-slate-500">
+      <span>SORT:</span>
+      <button id="sort-toggle-btn" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition cursor-pointer flex items-center gap-1">
+        <span id="sort-label">NEWEST</span>
+        <span id="sort-icon">&darr;</span>
+      </button>
+    </div>
+  </div>
 
-  <!-- Photo Grid -->
-  <section id="gallery-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-16">
+  <!-- Masonry Gallery -->
+  <section id="gallery-container" class="columns-1 sm:columns-2 lg:columns-2 max-w-4xl mx-auto gap-6 mb-16 space-y-6">
     <div id="gallery-loader" class="col-span-full py-16 flex flex-col items-center justify-center gap-3 text-slate-400 font-mono text-xs">
       <div class="w-6 h-6 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div>
       <span>CONNECTING_TO_IMMICH_ARCHIVE...</span>
     </div>
   </section>
 
-  <!-- Prints & Contact Banner -->
-  <section class="p-6 sm:p-8 bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-fade-in delay-200">
+  <!-- Empty Filter State -->
+  <div id="gallery-empty" class="hidden py-16 text-center text-slate-500 font-mono text-sm border border-dashed border-slate-800 rounded-xl mb-16 max-w-4xl mx-auto">
+    [!] No photos match the active filter criteria.
+  </div>
+
+  <!-- Inquiries Banner -->
+  <section class="p-6 sm:p-8 bg-slate-900/50 border border-slate-800 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 animate-fade-in delay-200 max-w-4xl mx-auto">
     <div>
       <h3 class="text-base font-semibold text-white mb-1 font-mono">Prints and Inquiries</h3>
       <p class="text-sm text-slate-400 font-sans max-w-xl leading-relaxed">
@@ -51,27 +55,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
     <button id="open-dispatch-btn" type="button" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 text-white text-xs font-mono rounded-lg transition whitespace-nowrap cursor-pointer flex items-center gap-2">
       <span>Get in Touch</span>
-      <span>→</span>
+      <span>&rarr;</span>
     </button>
   </section>
 
-  <!-- Lightbox Modal -->
-  <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden opacity-0 transition-opacity duration-200 flex flex-col items-center justify-center p-4 sm:p-8">
-    <button id="lightbox-close" class="absolute top-4 right-4 sm:top-6 sm:right-6 text-slate-400 hover:text-white bg-slate-900/80 border border-slate-700 p-2 rounded-full font-mono text-xs transition cursor-pointer" aria-label="Close photo">
-      ✕ ESC
-    </button>
-    <div class="max-w-5xl max-h-[85vh] flex flex-col items-center justify-center relative select-none">
-      <img id="lightbox-img" src="" alt="" draggable="false" oncontextmenu="return false;" class="max-h-[75vh] max-w-[92vw] w-auto h-auto object-contain rounded-lg shadow-2xl pointer-events-none select-none" />
-      <div class="mt-4 flex flex-col sm:flex-row items-center gap-2 text-center text-xs font-mono text-slate-300">
-        <span id="lightbox-title" class="font-sans font-medium text-white"></span>
-        <span class="hidden sm:inline text-slate-600">•</span>
-        <span id="lightbox-settings" class="text-emerald-400"></span>
+  <!-- Strict Fixed Fullscreen Lightbox -->
+  <div id="lightbox-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(12px);" class="flex-col justify-between p-4 sm:p-6 select-none">
+    <div class="w-full flex justify-between items-center text-xs font-mono text-slate-400 max-w-6xl mx-auto shrink-0">
+      <span class="text-emerald-400 tracking-wider">FRAME // TELEMETRY HUD</span>
+      <button id="lightbox-close" type="button" class="text-slate-400 hover:text-white bg-slate-900/80 border border-slate-700 px-3 py-1.5 rounded font-mono text-xs transition cursor-pointer">
+        &#10005; ESC
+      </button>
+    </div>
+
+    <div class="flex-1 min-h-0 w-full flex items-center justify-center p-2 my-2 overflow-hidden">
+      <img id="lightbox-img" src="" alt="" draggable="false" oncontextmenu="return false;"
+        class="max-h-full max-w-full w-auto h-auto object-contain rounded-lg shadow-2xl pointer-events-none select-none border border-slate-800/80" />
+    </div>
+
+    <div class="w-full max-w-4xl mx-auto bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs text-slate-300 shrink-0 backdrop-blur">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2 pb-2 border-b border-slate-800/80">
+        <div>
+          <span id="lightbox-title" class="text-white font-bold text-sm block"></span>
+          <span id="lightbox-device" class="text-slate-500 text-[11px]"></span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="lightbox-date" class="text-slate-500 text-[11px]"></span>
+          <button id="lightbox-like-btn" type="button" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 transition flex items-center gap-1.5 cursor-pointer">
+            <span class="heart-icon text-rose-500">&hearts;</span>
+            <span class="like-label">LIKE</span>
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+        <div id="lightbox-settings" class="text-emerald-400"></div>
+        <div id="lightbox-tags" class="flex flex-wrap gap-1.5"></div>
       </div>
     </div>
   </div>
 
   <!-- Terminal Dispatcher Modal -->
-  <div id="dispatch-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div id="dispatch-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background-color: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px);" class="items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl overflow-hidden font-mono text-xs flex flex-col animate-fade-in">
       <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
         <div class="flex items-center gap-2">
@@ -87,7 +111,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="flex items-center gap-2">
           <span class="text-emerald-400">[DIRECT]</span>
           <span class="text-slate-400 text-[11px]">Primary Inbox:</span>
-          <a href="mailto:contact@mvoorhies.com" class="text-emerald-400 hover:underline text-xs">contact@mvoorhies.com</a>
+          <a href="mailto:contact@mvoorhies.com" class="text-emerald-400 hover:underline text-xs">
+            contact@mvoorhies.com
+          </a>
         </div>
         <button id="copy-email-btn" type="button" class="self-start sm:self-auto text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded transition cursor-pointer">
           COPY
@@ -96,21 +122,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
       <form id="contact-composer" class="p-5 space-y-4">
         <div>
-          <label for="sender-name" class="block text-slate-400 mb-1 text-[11px]"><span class="text-emerald-400">01.</span> SENDER_IDENTITY:</label>
+          <label for="sender-name" class="block text-slate-400 mb-1 text-[11px]">
+            <span class="text-emerald-400">01.</span> SENDER_IDENTITY:
+          </label>
           <input type="text" id="sender-name" required placeholder="Name or Handle" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition" />
         </div>
         <div>
-          <label for="msg-subject" class="block text-slate-400 mb-1 text-[11px]"><span class="text-emerald-400">02.</span> DISPATCH_SUBJECT:</label>
+          <label for="msg-subject" class="block text-slate-400 mb-1 text-[11px]">
+            <span class="text-emerald-400">02.</span> DISPATCH_SUBJECT:
+          </label>
           <input type="text" id="msg-subject" required value="Photography / Print Inquiry" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition" />
         </div>
         <div>
-          <label for="msg-body" class="block text-slate-400 mb-1 text-[11px]"><span class="text-emerald-400">03.</span> MESSAGE_PAYLOAD:</label>
+          <label for="msg-body" class="block text-slate-400 mb-1 text-[11px]">
+            <span class="text-emerald-400">03.</span> MESSAGE_PAYLOAD:
+          </label>
           <textarea id="msg-body" rows="4" required placeholder="Inquiry or message details..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition resize-none"></textarea>
         </div>
         <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <span id="dispatch-status" class="text-slate-500 text-[11px]">Ready to transmit.</span>
           <button type="submit" class="px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 rounded transition duration-150 flex items-center gap-2 cursor-pointer font-bold">
-            <span>TRANSMIT DISPATCH</span><span>❯</span>
+            <span>TRANSMIT DISPATCH</span>
+            <span>❯</span>
           </button>
         </div>
       </form>
@@ -124,34 +157,85 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     date: string;
     exif: {
       lensModel?: string;
+      make?: string;
       model?: string;
       fNumber?: number | string;
       exposureTime?: string;
       iso?: number | string;
+      description?: string;
+      focalLength?: number | string;
     };
   }
 
-  const SHARE_KEY = import.meta.env.PUBLIC_IMMICH_SHARE_KEY || '';
-  const ALBUM_ID = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || '';
-  const CACHE_KEY = 'immich-v3-' + SHARE_KEY.slice(0, 12);
-  const TTL = 10 * 60 * 1000;
+  const SHARE_KEY = 'zdJL7FwEkjgCinwJ0ESv8fGz7-8An9Y9PBR83WkPonQITM6VDyGEd2bx8__cBhinOuU';
+  const ALBUM_ID = '489bea04-5977-4ad3-a887-39d4c2417ccd';
+  const LIKES_KEY = 'mvoorhies_photo_likes';
 
   let globalAssets: PhotoAsset[] = [];
   let currentFilter = 'all';
   let sortDescending = true;
+  let activeLightboxAsset: PhotoAsset | null = null;
 
   function esc(s: unknown) {
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
-  function readCache() {
-    try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch { return null; }
+  function getLikedIds(): Set<string> {
+    try {
+      const stored = JSON.parse(localStorage.getItem(LIKES_KEY) || '[]');
+      return new Set(Array.isArray(stored) ? stored : []);
+    } catch {
+      return new Set();
+    }
+  }
+
+  function toggleLike(id: string): boolean {
+    const likes = getLikedIds();
+    let isLiked = false;
+    if (likes.has(id)) {
+      likes.delete(id);
+      isLiked = false;
+    } else {
+      likes.add(id);
+      isLiked = true;
+    }
+    localStorage.setItem(LIKES_KEY, JSON.stringify(Array.from(likes)));
+    updateCardLikeState(id, isLiked);
+    return isLiked;
+  }
+
+  function updateCardLikeState(assetId: string, isLiked: boolean) {
+    document.querySelectorAll(`.like-btn[data-id="${assetId}"]`).forEach(btn => {
+      btn.className = isLiked 
+        ? 'like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer text-rose-400 bg-rose-950/40 border border-rose-800/50'
+        : 'like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer text-slate-500 hover:text-slate-300';
+      btn.innerHTML = `<span class="heart-symbol text-xs">${isLiked ? '&hearts;' : '&#9825;'}</span><span class="text-[10px]">${isLiked ? 'LIKED' : 'LIKE'}</span>`;
+    });
+
+    const lightboxBtn = document.getElementById('lightbox-like-btn');
+    if (lightboxBtn && activeLightboxAsset && activeLightboxAsset.id === assetId) {
+      lightboxBtn.className = isLiked 
+        ? 'px-2.5 py-1 rounded bg-rose-950/40 border border-rose-700 text-rose-400 transition flex items-center gap-1.5 cursor-pointer'
+        : 'px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 transition flex items-center gap-1.5 cursor-pointer';
+      lightboxBtn.innerHTML = `<span class="heart-icon">${isLiked ? '&hearts;' : '&#9825;'}</span><span class="like-label">${isLiked ? 'LIKED' : 'LIKE'}</span>`;
+    }
+  }
+
+  function formatRelativeDate(isoDateStr: string): string {
+    if (!isoDateStr) return 'Recently';
+    const d = new Date(isoDateStr);
+    if (isNaN(d.getTime())) return isoDateStr;
+    const diff = (Date.now() - d.getTime()) / 1000;
+    if (diff < 86400) return 'Today';
+    const days = Math.floor(diff / 86400);
+    if (days === 1) return 'Yesterday';
+    if (days < 30) return `${days}d ago`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}mo ago`;
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
   }
 
   async function getAssets(): Promise<PhotoAsset[]> {
-    const cached = readCache();
-    if (cached && Date.now() - cached.at < TTL) return cached.assets;
-
     try {
       const res = await fetch('/immich-api/search/metadata?key=' + encodeURIComponent(SHARE_KEY), {
         method: 'POST',
@@ -162,180 +246,244 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       const data = await res.json();
       const raw = data.assets?.items || [];
 
-      const assets: PhotoAsset[] = raw
+      return raw
         .filter((a: { type?: string }) => !a.type || a.type === 'IMAGE')
-        .map((a: { id: string; fileCreatedAt?: string; localDateTime?: string; exifInfo?: PhotoAsset['exif'] }) => ({
+        .map((a: { id: string; fileCreatedAt?: string; localDateTime?: string; exifInfo?: any }) => ({
           id: a.id,
           date: a.fileCreatedAt || a.localDateTime || '',
           exif: {
             lensModel: a.exifInfo?.lensModel,
+            make: a.exifInfo?.make,
             model: a.exifInfo?.model,
             fNumber: a.exifInfo?.fNumber,
             exposureTime: a.exifInfo?.exposureTime,
-            iso: a.exifInfo?.iso
+            iso: a.exifInfo?.iso,
+            description: a.exifInfo?.description || '',
+            focalLength: a.exifInfo?.focalLength
           }
         }));
-
-      if (assets.length) { try { localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), assets })); } catch {} }
-      return assets;
     } catch (err) {
-      if (cached) return cached.assets;
-      throw err;
+      console.error('Immich fetch error:', err);
+      return [];
     }
   }
 
   function renderGallery() {
     const container = document.getElementById('gallery-container');
+    const emptyState = document.getElementById('gallery-empty');
     if (!container) return;
 
-    // Filter logic
+    const userLikes = getLikedIds();
     let filtered = [...globalAssets];
-    if (currentFilter === 'lowlight') {
-      filtered = filtered.filter(a => Number(a.exif?.iso || 0) >= 800);
-    } else if (currentFilter === 'canon') {
-      filtered = filtered.filter(a => /canon/i.test(a.exif?.model || '') || /canon/i.test(a.exif?.lensModel || ''));
+    if (currentFilter !== 'all') {
+      filtered = filtered.filter(asset => {
+        const desc = asset.exif?.description || '';
+        const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase());
+        const fullCam = `${asset.exif?.make || ''} ${asset.exif?.model || ''}`.toLowerCase();
+        if (fullCam.includes('canon')) tags.push('canon');
+        if (fullCam.includes('samsung') || fullCam.includes('galaxy')) tags.push('samsung');
+        return tags.includes(currentFilter.toLowerCase());
+      });
     }
 
-    // Sort logic
     filtered.sort((a, b) => {
       const cmp = (b.date || '').localeCompare(a.date || '');
       return sortDescending ? cmp : -cmp;
     });
 
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="col-span-full p-8 text-center bg-slate-900/50 border border-slate-800 rounded-xl text-slate-400 text-sm font-mono">
-          [!] No photos match the active filter criteria.
-        </div>`;
+      container.innerHTML = '';
+      if (emptyState) emptyState.classList.remove('hidden');
       return;
     }
+
+    if (emptyState) emptyState.classList.add('hidden');
 
     container.innerHTML = filtered.map((asset) => {
       const thumbUrl = `/immich-api/assets/${asset.id}/thumbnail?size=preview&key=${encodeURIComponent(SHARE_KEY)}`;
       const exif = asset.exif || {};
       const lens = exif.lensModel || '';
-      const camera = exif.model ? (/^canon/i.test(exif.model) ? exif.model : `Canon ${exif.model}`) : 'Canon Optics';
+      const make = (exif.make || '').trim();
+      const rawModel = (exif.model || '').trim();
+      const cleanMake = make ? make.charAt(0).toUpperCase() + make.slice(1) : '';
+      let camera = 'Digital Capture';
+      if (rawModel) {
+        camera = rawModel.toLowerCase().startsWith(cleanMake.toLowerCase())
+          ? rawModel
+          : [cleanMake, rawModel].filter(Boolean).join(' ');
+      } else if (cleanMake) {
+        camera = cleanMake;
+      }
+
+      const isPhoneLens = /wide-angle|telephoto|ultra-wide/i.test(lens);
+      const desc = exif.description || '';
+      const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toUpperCase());
+      const fullCam = `${make} ${rawModel}`.toLowerCase();
+      if (fullCam.includes('canon')) {
+        if (!tags.includes('CANON')) tags.push('CANON');
+      } else if (fullCam.includes('samsung') || fullCam.includes('galaxy')) {
+        if (!tags.includes('SAMSUNG')) tags.push('SAMSUNG');
+      }
+
+      const landmarkTag = tags.find(t => !['CANON', 'SAMSUNG', 'APPLE', 'SONY', 'NIKON', 'LANDSCAPE', 'PORTRAIT', 'NIGHT', 'MACRO'].includes(t));
+      const displayTitle = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (lens && !isPhoneLens ? lens : (desc ? desc.replace(/#[a-z0-9_-]+/gi, '').trim() : camera));
+
       const fStop = exif.fNumber ? `f/${exif.fNumber}` : '';
       const shutter = exif.exposureTime ? `${exif.exposureTime}s` : '';
       const iso = exif.iso ? `ISO ${exif.iso}` : '';
       const settings = [fStop, shutter, iso].filter(Boolean).join('  ·  ');
-      const title = lens || camera;
+      const timeAgo = formatRelativeDate(asset.date);
+      const isLiked = userLikes.has(asset.id);
 
       return `
-        <article class="p-4 sm:p-5 bg-slate-900/60 border border-slate-800/90 rounded-2xl card-hover animate-fade-in flex flex-col justify-between group">
+        <article class="photo-card break-inside-avoid mb-6 p-4 sm:p-5 bg-slate-900/60 border border-slate-800/90 rounded-2xl hover:border-slate-700 transition duration-300 animate-fade-in flex flex-col justify-between group">
           <button type="button"
-            class="photo-trigger aspect-[4/3] overflow-hidden bg-slate-950 block rounded-xl mb-4 relative cursor-zoom-in text-left w-full focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-            data-img="${esc(thumbUrl)}" data-title="${esc(title)}" data-settings="${esc(settings)}" title="Click to view photograph">
-            <img src="${esc(thumbUrl)}" alt="${esc(title)}" loading="lazy" draggable="false" oncontextmenu="return false;"
-              class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300 pointer-events-none select-none" />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <span class="text-xs text-white bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded-md border border-slate-700 font-mono">View Photo ↗</span>
+            class="photo-trigger w-full overflow-hidden bg-slate-950 block rounded-xl mb-3 relative cursor-zoom-in text-left focus:outline-none"
+            data-id="${asset.id}" title="Click to view full photograph & telemetry">
+            <img src="${esc(thumbUrl)}" alt="${esc(displayTitle)}" loading="lazy" draggable="false" oncontextmenu="return false;"
+              class="w-full h-auto object-cover rounded-xl group-hover:scale-[1.01] transition-transform duration-300 pointer-events-none select-none" />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 rounded-xl">
+              <span class="text-xs text-white bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded-md border border-slate-700 font-mono">View Photo &amp; Telemetry ↗</span>
             </div>
           </button>
-          <div>
-            <div class="flex justify-between items-baseline mb-1.5">
-              <span class="text-xs font-medium text-slate-200">${esc(title)}</span>
-              ${settings ? `<span class="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">${esc(settings)}</span>` : ''}
+          
+          <div class="space-y-3 font-mono">
+            <div class="flex justify-between items-baseline gap-2">
+              <span class="text-xs font-semibold text-slate-100 truncate">${esc(displayTitle)}</span>
+              <span class="text-[10px] text-slate-500 whitespace-nowrap">${timeAgo}</span>
             </div>
-            <div class="flex justify-between items-center text-[11px] text-slate-500 pt-2 border-t border-slate-800/60 mt-2">
-              <span>${esc(exif.model ? camera : 'Digital Capture')}</span>
-              <span class="text-slate-600 font-mono text-[10px]">LIVE SYNC</span>
+            <div class="flex flex-wrap gap-1.5">
+              ${tags.map(t => `<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-800/80 text-slate-400 border border-slate-700/80">${esc(t)}</span>`).join('')}
+            </div>
+            <div class="flex justify-between items-center text-[11px] text-slate-500 pt-2 border-t border-slate-800/60">
+              <span class="text-slate-400">${esc(camera)}</span>
+              <button type="button" class="like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer ${isLiked ? 'text-rose-400 bg-rose-950/40 border border-rose-800/50' : 'text-slate-500 hover:text-slate-300'}"
+                      data-id="${asset.id}" title="Heart this photograph">
+                <span class="heart-symbol text-xs">${isLiked ? '&hearts;' : '&#9825;'}</span>
+                <span class="text-[10px]">${isLiked ? 'LIKED' : 'LIKE'}</span>
+              </button>
             </div>
           </div>
         </article>`;
     }).join('');
 
-    bindLightboxEvents();
+    bindInteractiveEvents();
   }
 
-  function setupFilters() {
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const sortBtn = document.getElementById('sort-toggle-btn');
-    const sortLabel = document.getElementById('sort-label');
-    const sortIcon = document.getElementById('sort-icon');
+  function buildFilterButtons(allTags: Set<string>) {
+    const filterBar = document.getElementById('filter-bar');
+    if (!filterBar) return;
 
-    filterBtns.forEach(btn => {
+    filterBar.querySelectorAll('.dynamic-tag-btn').forEach(b => b.remove());
+
+    allTags.forEach((tag) => {
+      const btn = document.createElement('button');
+      btn.setAttribute('data-filter', tag.toLowerCase());
+      btn.className = 'filter-btn dynamic-tag-btn px-3 py-1 text-xs font-mono rounded bg-slate-800/60 text-slate-400 border border-slate-700 hover:text-white transition-colors uppercase cursor-pointer';
+      btn.textContent = tag;
+      filterBar.appendChild(btn);
+    });
+
+    const buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach((btn) => {
       btn.addEventListener('click', () => {
-        filterBtns.forEach(b => {
-          b.className = 'filter-btn px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition cursor-pointer';
+        buttons.forEach((b) => {
+          b.classList.remove('active', 'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30');
+          b.classList.add('bg-slate-800/60', 'text-slate-400', 'border-slate-700');
         });
-        btn.className = 'filter-btn px-2.5 py-1 rounded bg-emerald-950 border border-emerald-700 text-emerald-400 transition cursor-pointer';
+        btn.classList.add('active', 'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30');
+        btn.classList.remove('bg-slate-800/60', 'text-slate-400', 'border-slate-700');
+
         currentFilter = btn.getAttribute('data-filter') || 'all';
         renderGallery();
       });
     });
+  }
 
-    sortBtn?.addEventListener('click', () => {
-      sortDescending = !sortDescending;
-      if (sortLabel && sortIcon) {
-        sortLabel.textContent = sortDescending ? 'NEWEST' : 'OLDEST';
-        sortIcon.textContent = sortDescending ? '↓' : '↑';
-      }
-      renderGallery();
+  function bindInteractiveEvents() {
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        if (id) toggleLike(id);
+      });
+    });
+
+    document.querySelectorAll('.photo-trigger').forEach(trigger => {
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        const id = trigger.getAttribute('data-id');
+        const asset = globalAssets.find(a => a.id === id);
+        if (asset) openLightbox(asset);
+      });
     });
   }
 
-  async function initLiveGallery() {
-    const loader = document.getElementById('gallery-loader');
-    try {
-      globalAssets = await getAssets();
-      if (loader) loader.remove();
-      setupFilters();
-      renderGallery();
-    } catch (err: unknown) {
-      if (loader) {
-        const msg = err instanceof Error ? err.message : String(err);
-        loader.innerHTML = `<span class="text-rose-400 text-sm font-mono">[!] Live sync failed: ${esc(msg)}</span>`;
-      }
-    }
-  }
-
-  function bindLightboxEvents() {
+  function openLightbox(asset: PhotoAsset) {
+    activeLightboxAsset = asset;
     const modal = document.getElementById('lightbox-modal');
-    const closeBtn = document.getElementById('lightbox-close');
     const modalImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
     const modalTitle = document.getElementById('lightbox-title');
+    const modalDevice = document.getElementById('lightbox-device');
+    const modalDate = document.getElementById('lightbox-date');
     const modalSettings = document.getElementById('lightbox-settings');
-    const triggers = document.querySelectorAll('.photo-trigger');
+    const modalTags = document.getElementById('lightbox-tags');
+    const likeBtn = document.getElementById('lightbox-like-btn');
     if (!modal || !modalImg) return;
 
-    if (modal.parentElement !== document.body) document.body.appendChild(modal);
-
-    function openModal(imgSrc: string, title: string, settings: string) {
-      if (!modalImg) return;
-      modalImg.onerror = () => { if (modalTitle) modalTitle.textContent = 'Photo failed to load'; };
-      modalImg.src = imgSrc;
-      if (modalTitle) modalTitle.textContent = title || '';
-      if (modalSettings) modalSettings.textContent = settings || '';
-      modal.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        modal.classList.remove('opacity-0');
-        modal.classList.add('opacity-100');
-      });
-      document.body.style.overflow = 'hidden';
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
     }
 
-    function closeModal() {
-      modal.classList.remove('opacity-100');
-      modal.classList.add('opacity-0');
-      setTimeout(() => {
-        if (!modal.classList.contains('opacity-0')) return;
-        modal.classList.add('hidden');
-        if (modalImg) modalImg.src = '';
-        document.body.style.overflow = '';
-      }, 250);
+    const exif = asset.exif || {};
+    const make = (exif.make || '').trim();
+    const rawModel = (exif.model || '').trim();
+    const cleanMake = make ? make.charAt(0).toUpperCase() + make.slice(1) : '';
+    const camera = rawModel 
+      ? (rawModel.toLowerCase().startsWith(cleanMake.toLowerCase()) ? rawModel : [cleanMake, rawModel].filter(Boolean).join(' '))
+      : (cleanMake || 'Digital Capture');
+
+    const desc = exif.description || '';
+    const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toUpperCase());
+    const landmarkTag = tags.find(t => !['CANON', 'SAMSUNG', 'APPLE', 'SONY', 'NIKON', 'LANDSCAPE', 'PORTRAIT', 'NIGHT', 'MACRO'].includes(t));
+    const title = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (exif.lensModel || camera);
+
+    const fStop = exif.fNumber ? `f/${exif.fNumber}` : '';
+    const shutter = exif.exposureTime ? `${exif.exposureTime}s` : '';
+    const iso = exif.iso ? `ISO ${exif.iso}` : '';
+    const focal = exif.focalLength ? `${exif.focalLength}mm` : '';
+    const settings = [focal, fStop, shutter, iso].filter(Boolean).join('  ·  ');
+
+    const thumbUrl = `/immich-api/assets/${asset.id}/thumbnail?size=preview&key=${encodeURIComponent(SHARE_KEY)}`;
+    modalImg.src = thumbUrl;
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalDevice) modalDevice.textContent = `${camera} ${exif.lensModel ? `• ${exif.lensModel}` : ''}`;
+    if (modalDate) modalDate.textContent = asset.date ? new Date(asset.date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
+    if (modalSettings) modalSettings.innerHTML = settings ? `<span class="bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-900/60">${settings}</span>` : '';
+    if (modalTags) {
+      modalTags.innerHTML = tags.map(t => `<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-900 text-slate-400 border border-slate-800">#${esc(t)}</span>`).join('');
     }
 
-    triggers.forEach((t) => t.addEventListener('click', () => {
-      openModal(t.getAttribute('data-img') || '', t.getAttribute('data-title') || '', t.getAttribute('data-settings') || '');
-    }));
-    closeBtn?.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal || e.target === modal.firstElementChild) closeModal();
-    });
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
-    });
+    const isLiked = getLikedIds().has(asset.id);
+    if (likeBtn) {
+      likeBtn.className = isLiked 
+        ? 'px-2.5 py-1 rounded bg-rose-950/40 border border-rose-700 text-rose-400 transition flex items-center gap-1.5 cursor-pointer'
+        : 'px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 transition flex items-center gap-1.5 cursor-pointer';
+      likeBtn.innerHTML = `<span class="heart-icon">${isLiked ? '&hearts;' : '&#9825;'}</span><span class="like-label">${isLiked ? 'LIKED' : 'LIKE'}</span>`;
+    }
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    const modal = document.getElementById('lightbox-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    const img = document.getElementById('lightbox-img') as HTMLImageElement | null;
+    if (img) img.src = '';
+    document.body.style.overflow = '';
+    activeLightboxAsset = null;
   }
 
   function setupDispatcherModal() {
@@ -348,26 +496,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     const targetEmail = 'contact@mvoorhies.com';
 
     if (!modal || !openBtn) return;
-    if (modal.parentElement !== document.body) document.body.appendChild(modal);
+
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
 
     function openModal() {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.getElementById('sender-name')?.focus();
+      if (!modal) return;
+      modal.style.display = 'flex';
+      (document.getElementById('sender-name') as HTMLInputElement)?.focus();
       document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      if (!modal) return;
+      modal.style.display = 'none';
       document.body.style.overflow = '';
     }
 
-    openBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
+    openBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    });
+
     closeBtn?.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
     });
 
     copyBtn?.addEventListener('click', async () => {
@@ -408,11 +566,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     });
   }
 
-  function initPage() {
-    initLiveGallery();
-    setupDispatcherModal();
+  async function initLiveGallery() {
+    const loader = document.getElementById('gallery-loader');
+    const sortBtn = document.getElementById('sort-toggle-btn');
+    const sortLabel = document.getElementById('sort-label');
+    const sortIcon = document.getElementById('sort-icon');
+
+    try {
+      globalAssets = await getAssets();
+      if (loader) loader.remove();
+
+      const allFoundTags = new Set<string>();
+      globalAssets.forEach(asset => {
+        const desc = asset.exif?.description || '';
+        const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toUpperCase());
+        const fullCam = `${asset.exif?.make || ''} ${asset.exif?.model || ''}`.toLowerCase();
+        if (fullCam.includes('canon')) allFoundTags.add('CANON');
+        if (fullCam.includes('samsung') || fullCam.includes('galaxy')) allFoundTags.add('SAMSUNG');
+        tags.forEach(t => allFoundTags.add(t));
+      });
+
+      buildFilterButtons(allFoundTags);
+      renderGallery();
+
+      sortBtn?.addEventListener('click', () => {
+        sortDescending = !sortDescending;
+        if (sortLabel && sortIcon) {
+          sortLabel.textContent = sortDescending ? 'NEWEST' : 'OLDEST';
+          sortIcon.textContent = sortDescending ? '↓' : '↑';
+        }
+        renderGallery();
+      });
+
+      document.getElementById('lightbox-close')?.addEventListener('click', closeLightbox);
+      document.getElementById('lightbox-modal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('lightbox-modal')) closeLightbox();
+      });
+      document.getElementById('lightbox-like-btn')?.addEventListener('click', () => {
+        if (activeLightboxAsset) toggleLike(activeLightboxAsset.id);
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+      });
+
+      setupDispatcherModal();
+    } catch (err: any) {
+      if (loader) loader.innerHTML = `<span class="text-rose-400 font-mono text-xs">[!] Telemetry offline</span>`;
+    }
   }
 
-  initPage();
-  document.addEventListener('astro:after-swap', initPage);
+  initLiveGallery();
+  document.addEventListener('astro:after-swap', initLiveGallery);
 </script>

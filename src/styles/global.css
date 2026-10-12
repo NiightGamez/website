@@ -236,3 +236,293 @@ html.light .card-hover:hover {
   box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.8), 
               0 0 20px -2px rgba(16, 185, 129, 0.35) !important;
 }
+
+/* Light Mode Overrides for Opacity Badges & Photo Cards */
+html.light .bg-slate-800\/80,
+html.light .bg-slate-800\/60 {
+  background-color: #e2e8f0 !important; /* slate-200 */
+}
+
+html.light .border-slate-700\/80,
+html.light .border-slate-700\/60 {
+  border-color: #cbd5e1 !important;     /* slate-300 */
+}
+
+html.light .photo-card .text-slate-400,
+html.light .filter-btn {
+  color: #334155 !important;            /* slate-700 for legible tag text */
+}
+
+html.light .filter-btn.active {
+  background-color: #ecfdf5 !important; /* emerald-50 */
+  color: #059669 !important;            /* emerald-600 */
+  border-color: #a7f3d0 !important;     /* emerald-200 */
+}
+
+/* ========================================================
+   LIGHT MODE: Comprehensive /photos Route Overrides
+   ======================================================== */
+
+/* Photo Cards & Masonry Items */
+html.light .photo-card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .photo-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Image Background Frame */
+html.light .photo-trigger {
+  background-color: #f1f5f9 !important;
+}
+
+/* Photo Card Tag Pills */
+html.light .photo-card span.uppercase {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Top Dynamic Filter Bar */
+html.light #filter-bar,
+html.light .filter-bar-container {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .filter-btn {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light .filter-btn:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.light .filter-btn.active {
+  background-color: #ecfdf5 !important;
+  color: #059669 !important;
+  border-color: #a7f3d0 !important;
+}
+
+/* Sort Toggle Button */
+html.light #sort-toggle-btn {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+html.light #sort-toggle-btn:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Photo Card Like Buttons */
+html.light .like-btn {
+  color: #64748b !important;
+}
+
+html.light .like-btn:hover {
+  color: #0f172a !important;
+}
+
+/* Bottom Inquiries Banner */
+html.light section.bg-slate-900\/50 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light #open-dispatch-btn {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light #open-dispatch-btn:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+/* Lightbox Modal & HUD in Light Mode */
+html.light #lightbox-modal {
+  background-color: rgba(248, 250, 252, 0.96) !important; /* light slate backdrop */
+}
+
+html.light #lightbox-close {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html.light #lightbox-close:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html.light #lightbox-modal .bg-slate-950\/90 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light #lightbox-modal #lightbox-title {
+  color: #0f172a !important;
+}
+
+html.light #lightbox-modal #lightbox-device,
+html.light #lightbox-modal #lightbox-date {
+  color: #64748b !important;
+}
+
+html.light #lightbox-modal #lightbox-tags span {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light #lightbox-like-btn {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+/* Contact Dispatcher in Light Mode */
+html.light #dispatch-modal {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+}
+
+html.light #dispatch-modal .bg-slate-900 {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light #dispatch-modal .bg-slate-950,
+html.light #dispatch-modal .bg-slate-950\/60 {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light #dispatch-modal input,
+html.light #dispatch-modal textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light #dispatch-modal input:focus,
+html.light #dispatch-modal textarea:focus {
+  border-color: #10b981 !important;
+}
+
+/* ========================================================
+   LIGHT MODE + PHOSPHOR THEME INTEGRATION (theme amber/cyan)
+   ======================================================== */
+
+/* Amber Theme in Light Mode */
+html.light[data-theme="amber"] .text-emerald-400,
+html.light[data-theme="amber"] .text-emerald-500 {
+  color: #d97706 !important; /* amber-600 */
+}
+html.light[data-theme="amber"] .bg-emerald-950,
+html.light[data-theme="amber"] .bg-emerald-950\/40,
+html.light[data-theme="amber"] .bg-emerald-950\/60,
+html.light[data-theme="amber"] .bg-emerald-950\/80 {
+  background-color: #fef3c7 !important; /* amber-100 */
+}
+html.light[data-theme="amber"] .border-emerald-800,
+html.light[data-theme="amber"] .border-emerald-800\/60,
+html.light[data-theme="amber"] .border-emerald-900\/50 {
+  border-color: #fcd34d !important; /* amber-300 */
+}
+html.light[data-theme="amber"] .filter-btn.active {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: #f59e0b !important;
+}
+
+/* Cyan Theme in Light Mode */
+html.light[data-theme="cyan"] .text-emerald-400,
+html.light[data-theme="cyan"] .text-emerald-500 {
+  color: #0891b2 !important; /* cyan-600 */
+}
+html.light[data-theme="cyan"] .bg-emerald-950,
+html.light[data-theme="cyan"] .bg-emerald-950\/40,
+html.light[data-theme="cyan"] .bg-emerald-950\/60,
+html.light[data-theme="cyan"] .bg-emerald-950\/80 {
+  background-color: #cffafe !important; /* cyan-100 */
+}
+html.light[data-theme="cyan"] .border-emerald-800,
+html.light[data-theme="cyan"] .border-emerald-800\/60,
+html.light[data-theme="cyan"] .border-emerald-900\/50 {
+  border-color: #67e8f9 !important; /* cyan-300 */
+}
+html.light[data-theme="cyan"] .filter-btn.active {
+  background-color: #cffafe !important;
+  color: #0e7490 !important;
+  border-color: #06b6d4 !important;
+}
+
+/* Ensure the top ambient scroll indicator follows the theme */
+html[data-theme="amber"] #ambient-scroll-line {
+  background: linear-gradient(to right, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.8), #fde68a) !important;
+}
+html[data-theme="cyan"] #ambient-scroll-line {
+  background: linear-gradient(to right, rgba(6, 182, 212, 0.2), rgba(34, 211, 238, 0.8), #a5f3fc) !important;
+}
+
+/* ========================================================
+   OPTION A: Subtle Dynamic Theme Hover for Photo Tags
+   ======================================================== */
+
+/* Base transition for smooth lighting */
+.photo-card span.uppercase {
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Default / Emerald Theme Hover (Dark Mode) */
+.photo-card span.uppercase:hover {
+  border-color: rgba(52, 211, 153, 0.6) !important; /* emerald-400 */
+  color: #a7f3d0 !important;                        /* emerald-200 */
+  background-color: rgba(6, 78, 59, 0.4) !important; /* emerald-950/40 */
+}
+
+/* Default / Emerald Theme Hover (Light Mode) */
+html.light .photo-card span.uppercase:hover {
+  border-color: #10b981 !important;                 /* emerald-500 */
+  color: #065f46 !important;                        /* emerald-800 */
+  background-color: #ecfdf5 !important;             /* emerald-50 */
+}
+
+/* Amber Theme Hover (Dark Mode) */
+html[data-theme="amber"] .photo-card span.uppercase:hover {
+  border-color: rgba(245, 158, 11, 0.6) !important;  /* amber-500 */
+  color: #fde68a !important;                         /* amber-200 */
+  background-color: rgba(120, 53, 15, 0.4) !important;/* amber-950/40 */
+}
+
+/* Amber Theme Hover (Light Mode) */
+html.light[data-theme="amber"] .photo-card span.uppercase:hover {
+  border-color: #f59e0b !important;                  /* amber-500 */
+  color: #92400e !important;                         /* amber-800 */
+  background-color: #fffbeb !important;              /* amber-50 */
+}
+
+/* Cyan Theme Hover (Dark Mode) */
+html[data-theme="cyan"] .photo-card span.uppercase:hover {
+  border-color: rgba(6, 182, 212, 0.6) !important;   /* cyan-500 */
+  color: #a5f3fc !important;                         /* cyan-200 */
+  background-color: rgba(22, 78, 99, 0.4) !important; /* cyan-950/40 */
+}
+
+/* Cyan Theme Hover (Light Mode) */
+html.light[data-theme="cyan"] .photo-card span.uppercase:hover {
+  border-color: #06b6d4 !important;                  /* cyan-500 */
+  color: #155e75 !important;                         /* cyan-800 */
+  background-color: #ecfeff !important;              /* cyan-50 */
+}

@@ -5,9 +5,6 @@ import CommandPalette from '../components/CommandPalette.astro';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import ScrollProgress from '../components/ScrollProgress.astro';
-import Scratchpad from '../components/Scratchpad.astro';
-import KeybindingsModal from '../components/KeybindingsModal.astro';
-import ScrambleEffect from '../components/ScrambleEffect.astro';
 
 interface Props {
   title: string;
@@ -44,13 +41,7 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
     <meta property="og:description" content={description} />
     <meta property="og:image" content={image} />
 
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonicalURL} />
-    <meta property="twitter:title" content={`${title} | Michael Voorhies`} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={image} />
-
-    <!-- Early Evaluator for Theme & CRT (Zero Screen Flash) -->
+    <!-- Early Theme & Accent Evaluator -->
     <script is:inline>
       (function() {
         const storedTheme = localStorage.getItem('theme-mode');
@@ -61,7 +52,11 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
           document.documentElement.classList.remove('light');
         }
 
-        // CRT Shader: Default to OFF unless explicitly saved as 'true'
+        const savedAccent = localStorage.getItem('site-theme');
+        if (savedAccent) {
+          document.documentElement.setAttribute('data-theme', savedAccent);
+        }
+
         if (localStorage.getItem('crt-mode') === 'true') {
           document.documentElement.classList.add('crt-active');
         } else {
@@ -71,7 +66,6 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
     </script>
 
     <style is:global>
-      /* CRT Scanline Shader Layer (Only active when .crt-active is on <html>) */
       html.crt-active body::before {
         content: " ";
         display: block;
@@ -86,6 +80,8 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
     </style>
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 flex flex-col justify-between transition-colors duration-200">
+    <ScrollProgress />
+
     <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 animate-fade-in w-full">
       <TerminalHeader />
       <Navbar currentPage={currentPage} />
@@ -94,61 +90,5 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
 
     <Footer />
     <CommandPalette />
-
-    <script>
-      class TerminalAudio {
-        private ctx: AudioContext | null = null;
-
-        playClick() {
-          if (localStorage.getItem('term-sound') === 'false') return;
-          try {
-            if (!this.ctx) {
-              const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-              this.ctx = new AudioCtx();
-            }
-            if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-            if (!this.ctx) return;
-
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(140, this.ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.02);
-
-            gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.02);
-
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.02);
-          } catch {}
-        }
-      }
-
-      window.termAudio = new TerminalAudio();
-
-      console.log(
-        `%c
-  __  __ _      _                  _ 
- |  \\/  (_)    | |                | |
- | \\  / |_  ___| |__   __ _  ___  | |
- | |\\/| | |/ __| '_ \\ / _\` |/ _ \\ | |
- |_|  |_|_|\\___|_| |_|\\__,_|\\___/ |_|
- 
- [!] Systems & Defensive Security Technologist
- [!] Ingress Monitored via Cloudflare Zero Trust
- [!] GitHub  : https://github.com/NiightGamez
- [!] Contact : contact@mvoorhies.com
-        `,
-        "color: #34d399; font-family: monospace; font-size: 11px; font-weight: bold; line-height: 1.25;"
-      );
-    </script>
-    <ScrambleEffect />
-    <ScrollProgress />
-    <Scratchpad />
-    <KeybindingsModal />
   </body>
 </html>
