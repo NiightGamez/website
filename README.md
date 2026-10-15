@@ -7,7 +7,7 @@ Built with Astro, styled with Tailwind CSS, and self-hosted on Proxmox VE behind
 * **Ingress:** Cloudflare Edge / Zero Trust WAF
 * **Tunnel:** Encrypted Outbound Argo Tunnel (cloudflared)
 * **Host:** Proxmox VE Hypervisor
-* **Container:** CT-102 (Debian 12 LXC)
+* **Container:** CT-102 (Debian 13 LXC)
 * **Web Server:** Nginx (Reverse Proxy & Hardened CSP Headers)
 
 ## Features
