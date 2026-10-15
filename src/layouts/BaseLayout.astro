@@ -23,7 +23,7 @@ const {
 const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" class="overflow-x-hidden">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -41,7 +41,7 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
     <meta property="og:description" content={description} />
     <meta property="og:image" content={image} />
 
-    <!-- Early Theme & Accent Evaluator -->
+    <!-- Early Theme & CRT Evaluator -->
     <script is:inline>
       (function() {
         const storedTheme = localStorage.getItem('theme-mode');
@@ -50,11 +50,6 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
           document.documentElement.classList.add('light');
         } else {
           document.documentElement.classList.remove('light');
-        }
-
-        const savedAccent = localStorage.getItem('site-theme');
-        if (savedAccent) {
-          document.documentElement.setAttribute('data-theme', savedAccent);
         }
 
         if (localStorage.getItem('crt-mode') === 'true') {
@@ -78,15 +73,16 @@ const canonicalURL = new URL(Astro.url.pathname, 'https://mvoorhies.com');
         opacity: 0.6;
       }
     </style>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   </head>
-  <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 flex flex-col justify-between transition-colors duration-200">
+  <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 flex flex-col justify-between transition-colors duration-200 overflow-x-hidden">
     <ScrollProgress />
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 animate-fade-in w-full">
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 animate-fade-in w-full">
       <TerminalHeader />
       <Navbar currentPage={currentPage} />
       <slot />
-    </div>
+    </main>
 
     <Footer />
     <CommandPalette />

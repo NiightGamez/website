@@ -1,0 +1,288 @@
+---
+interface Props {
+  siteKey?: string;
+}
+
+const { siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "" } = Astro.props;
+---
+
+<!-- Dispatch & Verification Modal Overlay -->
+<div id="dispatch-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl overflow-hidden font-mono text-xs flex flex-col animate-fade-in">
+    
+    <!-- Window Bar -->
+    <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+        <span class="ml-2 text-slate-300">comms_dispatcher.sh</span>
+      </div>
+      <button id="close-dispatch-btn" type="button" class="text-slate-500 hover:text-white transition">ESC</button>
+    </div>
+
+    <!-- PHASE 1: Gatekeeper / Turnstile Challenge (Shown First) -->
+    <div id="modal-gatekeeper" class="p-8 flex flex-col items-center justify-center text-center space-y-4">
+      <div class="inline-block px-2.5 py-0.5 bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 text-[11px] rounded">
+        ❯ CLOUDFLARE_EDGE_VERIFICATION
+      </div>
+      <h3 class="text-base font-bold text-white">Bot Protection Check</h3>
+      <p class="text-xs text-slate-400 max-w-xs leading-relaxed font-sans">
+        Complete the verification below to unlock direct communication channels and open the dispatch console.
+      </p>
+
+      <!-- Turnstile Mount Target -->
+      <div class="py-2 min-h-[65px] flex items-center justify-center">
+        <div id="modal-turnstile-container"></div>
+      </div>
+
+      <span id="gatekeeper-status" class="text-slate-500 text-[11px]">
+        Waiting for challenge response...
+      </span>
+    </div>
+
+    <!-- PHASE 2: Dispatcher Form & Direct Email (Hidden Until Verified) -->
+    <div id="modal-composer-stage" class="hidden flex-col">
+      <!-- Direct Email Quick-Copy Banner (Dynamically Decrypted) -->
+      <div class="bg-slate-950/60 border-b border-slate-800/80 px-5 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <span class="text-emerald-400 font-semibold uppercase text-[10px] sm:text-xs shrink-0">[DIRECT]</span>
+          <span id="unlocked-email-display" class="text-slate-300 truncate font-mono select-all"></span>
+        </div>
+        <button 
+          id="copy-email-btn" 
+          type="button" 
+          class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-[10px] transition shrink-0"
+        >
+          COPY
+        </button>
+      </div>
+
+      <!-- Composer Form -->
+      <form id="modal-contact-composer" class="p-5 space-y-4">
+        <div>
+          <label for="modal-sender-name" class="block text-slate-400 mb-1 text-[11px]">
+            <span class="text-emerald-400">01.</span> SENDER_IDENTITY:
+          </label>
+          <input 
+            type="text" 
+            id="modal-sender-name" 
+            required 
+            placeholder="Name or Handle"
+            class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition"
+          />
+        </div>
+
+        <div>
+          <label for="modal-msg-subject" class="block text-slate-400 mb-1 text-[11px]">
+            <span class="text-emerald-400">02.</span> DISPATCH_SUBJECT:
+          </label>
+          <input 
+            type="text" 
+            id="modal-msg-subject" 
+            required 
+            value="Photography / Print Inquiry"
+            class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition"
+          />
+        </div>
+
+        <div>
+          <label for="modal-msg-body" class="block text-slate-400 mb-1 text-[11px]">
+            <span class="text-emerald-400">03.</span> MESSAGE_PAYLOAD:
+          </label>
+          <textarea 
+            id="modal-msg-body" 
+            rows="4" 
+            required 
+            placeholder="Inquiry or message details..."
+            class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition resize-none"
+          ></textarea>
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-slate-800/60">
+          <span id="modal-dispatch-status" class="text-emerald-400 text-[11px]">
+            Verified. Ready to transmit.
+          </span>
+          <button 
+            id="modal-submit-btn"
+            type="submit" 
+            class="px-4 py-2 bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 rounded transition duration-150 flex items-center gap-2 font-bold cursor-pointer"
+          >
+            <span>TRANSMIT DISPATCH</span>
+            <span>❯</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script define:vars={{ siteKey }}>
+  let turnstileWidgetId = null;
+  let verifiedToken = null;
+  let resolvedEmail = null;
+
+  // Obfuscated email payload (Base64 encoded: contact@mvoorhies.com)
+  const encodedInbox = "Y29udGFjdEBtdm9vcmhpZXMuY29t";
+
+  function initGatekeeperTurnstile() {
+    const container = document.getElementById('modal-turnstile-container');
+    const status = document.getElementById('gatekeeper-status');
+
+    if (!container || !window.turnstile) return;
+
+    if (turnstileWidgetId !== null) {
+      window.turnstile.reset(turnstileWidgetId);
+      return;
+    }
+
+    turnstileWidgetId = window.turnstile.render('#modal-turnstile-container', {
+      sitekey: siteKey,
+      theme: 'dark',
+      callback: function(token) {
+        verifiedToken = token;
+        // Decode email only upon successful verification
+        resolvedEmail = atob(encodedInbox);
+
+        if (status) {
+          status.textContent = "Challenge verified. Unlocking interface...";
+          status.className = "text-emerald-400 text-[11px]";
+        }
+
+        setTimeout(() => {
+          // Transition from Gatekeeper to Full Composer
+          const gatekeeper = document.getElementById('modal-gatekeeper');
+          const composer = document.getElementById('modal-composer-stage');
+          const emailDisplay = document.getElementById('unlocked-email-display');
+
+          if (gatekeeper) gatekeeper.classList.add('hidden');
+          if (composer) {
+            composer.classList.remove('hidden');
+            composer.classList.add('flex');
+          }
+          if (emailDisplay) {
+            emailDisplay.textContent = resolvedEmail;
+          }
+
+          document.getElementById('modal-sender-name')?.focus();
+        }, 400);
+      },
+      'expired-callback': function() {
+        verifiedToken = null;
+        resolvedEmail = null;
+        const gatekeeper = document.getElementById('modal-gatekeeper');
+        const composer = document.getElementById('modal-composer-stage');
+        if (gatekeeper) gatekeeper.classList.remove('hidden');
+        if (composer) {
+          composer.classList.add('hidden');
+          composer.classList.remove('flex');
+        }
+        if (status) {
+          status.textContent = "Session expired. Please reverify.";
+          status.className = "text-amber-400 text-[11px]";
+        }
+      }
+    });
+  }
+
+  function setupModalDispatcher() {
+    const modal = document.getElementById('dispatch-modal');
+    const closeBtn = document.getElementById('close-dispatch-btn');
+    const form = document.getElementById('modal-contact-composer');
+    const status = document.getElementById('modal-dispatch-status');
+    const copyBtn = document.getElementById('copy-email-btn');
+
+    if (!modal) return;
+
+    // Attach trigger to buttons (e.g. "Get in Touch" on photos page)
+    document.querySelectorAll('.dispatch-trigger').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Reset to verification view on fresh opening if not already verified
+        if (!verifiedToken) {
+          const gatekeeper = document.getElementById('modal-gatekeeper');
+          const composer = document.getElementById('modal-composer-stage');
+          if (gatekeeper) gatekeeper.classList.remove('hidden');
+          if (composer) {
+            composer.classList.add('hidden');
+            composer.classList.remove('flex');
+          }
+
+          if (window.turnstile) {
+            initGatekeeperTurnstile();
+          } else {
+            const check = setInterval(() => {
+              if (window.turnstile) {
+                clearInterval(check);
+                initGatekeeperTurnstile();
+              }
+            }, 100);
+          }
+        }
+      });
+    });
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    closeBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // One-click copy for the revealed email
+    copyBtn?.addEventListener('click', () => {
+      if (!resolvedEmail) return;
+      navigator.clipboard.writeText(resolvedEmail).then(() => {
+        copyBtn.textContent = 'COPIED!';
+        copyBtn.className = 'px-2.5 py-1 bg-emerald-950 border border-emerald-600 text-emerald-400 rounded text-[10px] transition shrink-0';
+        setTimeout(() => {
+          copyBtn.textContent = 'COPY';
+          copyBtn.className = 'px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-[10px] transition shrink-0';
+        }, 2000);
+      });
+    });
+
+    // Form submission
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!verifiedToken || !resolvedEmail) return;
+
+      const sender = (document.getElementById('modal-sender-name'))?.value.trim() || 'Anonymous';
+      const subject = (document.getElementById('modal-msg-subject'))?.value.trim() || 'Photo Inquiry';
+      const body = (document.getElementById('modal-msg-body'))?.value.trim() || '';
+
+      const formattedBody = `${body}\n\n---\nSent by: ${sender}\nTransmitted from: ${window.location.origin}/photos\nCF-Turnstile: [Verified: ${verifiedToken.slice(0, 16)}...]`;
+      const mailtoUri = `mailto:${resolvedEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(formattedBody)}`;
+
+      if (status) {
+        status.textContent = 'Launching email client...';
+        status.className = 'text-emerald-400 text-[11px]';
+      }
+
+      window.location.href = mailtoUri;
+
+      setTimeout(() => {
+        closeModal();
+        if (status) {
+          status.textContent = 'Verified. Ready to transmit.';
+          status.className = 'text-emerald-400 text-[11px]';
+        }
+      }, 1200);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', setupModalDispatcher);
+</script>

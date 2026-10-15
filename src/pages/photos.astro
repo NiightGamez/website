@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "";
+const immichShareKey = import.meta.env.PUBLIC_IMMICH_SHARE_KEY || "";
+const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
 ---
 
 <BaseLayout title="Photography & Visual Work" currentPage="photos">
@@ -32,8 +36,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </div>
 
-  <!-- Masonry Gallery -->
-  <section id="gallery-container" class="columns-1 sm:columns-2 lg:columns-2 max-w-4xl mx-auto gap-6 mb-16 space-y-6">
+  <!-- Masonry Gallery (2-Column Max on Desktop) -->
+  <section id="gallery-container" class="columns-1 sm:columns-2 max-w-4xl mx-auto gap-6 mb-16 space-y-6">
     <div id="gallery-loader" class="col-span-full py-16 flex flex-col items-center justify-center gap-3 text-slate-400 font-mono text-xs">
       <div class="w-6 h-6 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div>
       <span>CONNECTING_TO_IMMICH_ARCHIVE...</span>
@@ -59,7 +63,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </button>
   </section>
 
-  <!-- Strict Fixed Fullscreen Lightbox -->
+  <!-- Fullscreen Lightbox -->
   <div id="lightbox-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(12px);" class="flex-col justify-between p-4 sm:p-6 select-none">
     <div class="w-full flex justify-between items-center text-xs font-mono text-slate-400 max-w-6xl mx-auto shrink-0">
       <span class="text-emerald-400 tracking-wider">FRAME // TELEMETRY HUD</span>
@@ -94,8 +98,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </div>
 
-  <!-- Terminal Dispatcher Modal -->
-  <div id="dispatch-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background-color: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px);" class="items-center justify-center p-4">
+  <!-- Terminal Dispatcher Modal with Turnstile Gatekeeper -->
+  <div id="dispatch-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl overflow-hidden font-mono text-xs flex flex-col animate-fade-in">
       <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
         <div class="flex items-center gap-2">
@@ -107,91 +111,106 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <button id="close-dispatch-btn" type="button" class="text-slate-500 hover:text-white transition cursor-pointer">ESC</button>
       </div>
 
-      <div class="px-5 py-3 bg-slate-950/60 border-b border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-          <span class="text-emerald-400">[DIRECT]</span>
-          <span class="text-slate-400 text-[11px]">Primary Inbox:</span>
-          <a href="mailto:contact@mvoorhies.com" class="text-emerald-400 hover:underline text-xs">
-            contact@mvoorhies.com
-          </a>
+      <!-- GATEKEEPER: Captcha Check First -->
+      <div id="photos-gatekeeper" class="p-8 flex flex-col items-center justify-center text-center space-y-4">
+        <div class="inline-block px-2.5 py-0.5 bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 text-[11px] rounded">
+          ❯ CLOUDFLARE_EDGE_VERIFICATION
         </div>
-        <button id="copy-email-btn" type="button" class="self-start sm:self-auto text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded transition cursor-pointer">
-          COPY
-        </button>
+        <h3 class="text-base font-bold text-white">Bot Protection Check</h3>
+        <p class="text-xs text-slate-400 max-w-xs leading-relaxed font-sans">
+          Complete the verification below to unlock direct communication channels and open the dispatch console.
+        </p>
+        <div class="py-2 min-h-[65px] flex items-center justify-center">
+          <div id="photos-turnstile-container"></div>
+        </div>
+        <span id="photos-gatekeeper-status" class="text-slate-500 text-[11px]">
+          Waiting for challenge response...
+        </span>
       </div>
 
-      <form id="contact-composer" class="p-5 space-y-4">
-        <div>
-          <label for="sender-name" class="block text-slate-400 mb-1 text-[11px]">
-            <span class="text-emerald-400">01.</span> SENDER_IDENTITY:
-          </label>
-          <input type="text" id="sender-name" required placeholder="Name or Handle" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition" />
-        </div>
-        <div>
-          <label for="msg-subject" class="block text-slate-400 mb-1 text-[11px]">
-            <span class="text-emerald-400">02.</span> DISPATCH_SUBJECT:
-          </label>
-          <input type="text" id="msg-subject" required value="Photography / Print Inquiry" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition" />
-        </div>
-        <div>
-          <label for="msg-body" class="block text-slate-400 mb-1 text-[11px]">
-            <span class="text-emerald-400">03.</span> MESSAGE_PAYLOAD:
-          </label>
-          <textarea id="msg-body" rows="4" required placeholder="Inquiry or message details..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition resize-none"></textarea>
-        </div>
-        <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <span id="dispatch-status" class="text-slate-500 text-[11px]">Ready to transmit.</span>
-          <button type="submit" class="px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 rounded transition duration-150 flex items-center gap-2 cursor-pointer font-bold">
-            <span>TRANSMIT DISPATCH</span>
-            <span>❯</span>
+      <!-- COMPOSER: Unlocks only after Turnstile completes -->
+      <div id="photos-composer-stage" class="hidden flex-col">
+        <!-- Direct Email Bar with Concealed Address until Verified -->
+        <div class="bg-slate-950/60 border-b border-slate-800/80 px-5 py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2 overflow-hidden">
+            <span class="text-emerald-400 font-semibold uppercase text-[10px] sm:text-xs shrink-0">[DIRECT]</span>
+            <span id="photos-unlocked-email" class="text-slate-300 truncate font-mono select-all"></span>
+          </div>
+          <button 
+            id="copy-email-btn" 
+            type="button" 
+            class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-[10px] transition shrink-0 cursor-pointer"
+          >
+            COPY
           </button>
         </div>
-      </form>
+
+        <form id="contact-composer" class="p-5 space-y-4">
+          <div>
+            <label for="sender-name" class="block text-slate-400 mb-1 text-[11px]">
+              <span class="text-emerald-400">01.</span> SENDER_IDENTITY:
+            </label>
+            <input type="text" id="sender-name" required placeholder="Name or Handle" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition" />
+          </div>
+          <div>
+            <label for="msg-subject" class="block text-slate-400 mb-1 text-[11px]">
+              <span class="text-emerald-400">02.</span> DISPATCH_SUBJECT:
+            </label>
+            <input type="text" id="msg-subject" required value="Photography / Print Inquiry" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition" />
+          </div>
+          <div>
+            <label for="msg-body" class="block text-slate-400 mb-1 text-[11px]">
+              <span class="text-emerald-400">03.</span> MESSAGE_PAYLOAD:
+            </label>
+            <textarea id="msg-body" rows="4" required placeholder="Inquiry or message details..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/80 transition resize-none"></textarea>
+          </div>
+          <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-t border-slate-800/60">
+            <span id="dispatch-status" class="text-emerald-400 text-[11px]">Ready to transmit.</span>
+            <button type="submit" class="px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 rounded transition duration-150 flex items-center gap-2 cursor-pointer font-bold">
+              <span>TRANSMIT DISPATCH</span>
+              <span>❯</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
     </div>
   </div>
 </BaseLayout>
 
-<script>
-  interface PhotoAsset {
-    id: string;
-    date: string;
-    exif: {
-      lensModel?: string;
-      make?: string;
-      model?: string;
-      fNumber?: number | string;
-      exposureTime?: string;
-      iso?: number | string;
-      description?: string;
-      focalLength?: number | string;
-    };
+<script is:inline define:vars={{ siteKey, immichShareKey, immichAlbumId }}>
+  var SHARE_KEY = immichShareKey;
+  var ALBUM_ID = immichAlbumId;
+  var LIKES_KEY = 'mvoorhies_photo_likes';
+  var ENCODED_INBOX = "Y29udGFjdEBtdm9vcmhpZXMuY29t";
+
+  var globalAssets = [];
+  var currentFilter = 'all';
+  var sortDescending = true;
+  var activeLightboxAsset = null;
+
+  var turnstileWidgetId = null;
+  var verifiedToken = null;
+  var resolvedEmail = null;
+
+  function esc(s) {
+    return String(s || '').replace(/[&<>"']/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
-  const SHARE_KEY = 'zdJL7FwEkjgCinwJ0ESv8fGz7-8An9Y9PBR83WkPonQITM6VDyGEd2bx8__cBhinOuU';
-  const ALBUM_ID = '489bea04-5977-4ad3-a887-39d4c2417ccd';
-  const LIKES_KEY = 'mvoorhies_photo_likes';
-
-  let globalAssets: PhotoAsset[] = [];
-  let currentFilter = 'all';
-  let sortDescending = true;
-  let activeLightboxAsset: PhotoAsset | null = null;
-
-  function esc(s: unknown) {
-    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
-  function getLikedIds(): Set<string> {
+  function getLikedIds() {
     try {
-      const stored = JSON.parse(localStorage.getItem(LIKES_KEY) || '[]');
+      var stored = JSON.parse(localStorage.getItem(LIKES_KEY) || '[]');
       return new Set(Array.isArray(stored) ? stored : []);
-    } catch {
+    } catch (e) {
       return new Set();
     }
   }
 
-  function toggleLike(id: string): boolean {
-    const likes = getLikedIds();
-    let isLiked = false;
+  function toggleLike(id) {
+    var likes = getLikedIds();
+    var isLiked = false;
     if (likes.has(id)) {
       likes.delete(id);
       isLiked = false;
@@ -204,64 +223,67 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     return isLiked;
   }
 
-  function updateCardLikeState(assetId: string, isLiked: boolean) {
-    document.querySelectorAll(`.like-btn[data-id="${assetId}"]`).forEach(btn => {
+  function updateCardLikeState(assetId, isLiked) {
+    document.querySelectorAll('.like-btn[data-id="' + assetId + '"]').forEach(function(btn) {
       btn.className = isLiked 
         ? 'like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer text-rose-400 bg-rose-950/40 border border-rose-800/50'
         : 'like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer text-slate-500 hover:text-slate-300';
-      btn.innerHTML = `<span class="heart-symbol text-xs">${isLiked ? '&hearts;' : '&#9825;'}</span><span class="text-[10px]">${isLiked ? 'LIKED' : 'LIKE'}</span>`;
+      btn.innerHTML = '<span class="heart-symbol text-xs">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="text-[10px]">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
     });
 
-    const lightboxBtn = document.getElementById('lightbox-like-btn');
+    var lightboxBtn = document.getElementById('lightbox-like-btn');
     if (lightboxBtn && activeLightboxAsset && activeLightboxAsset.id === assetId) {
       lightboxBtn.className = isLiked 
         ? 'px-2.5 py-1 rounded bg-rose-950/40 border border-rose-700 text-rose-400 transition flex items-center gap-1.5 cursor-pointer'
         : 'px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 transition flex items-center gap-1.5 cursor-pointer';
-      lightboxBtn.innerHTML = `<span class="heart-icon">${isLiked ? '&hearts;' : '&#9825;'}</span><span class="like-label">${isLiked ? 'LIKED' : 'LIKE'}</span>`;
+      lightboxBtn.innerHTML = '<span class="heart-icon">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="like-label">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
     }
   }
 
-  function formatRelativeDate(isoDateStr: string): string {
+  function formatRelativeDate(isoDateStr) {
     if (!isoDateStr) return 'Recently';
-    const d = new Date(isoDateStr);
+    var d = new Date(isoDateStr);
     if (isNaN(d.getTime())) return isoDateStr;
-    const diff = (Date.now() - d.getTime()) / 1000;
+    var diff = (Date.now() - d.getTime()) / 1000;
     if (diff < 86400) return 'Today';
-    const days = Math.floor(diff / 86400);
+    var days = Math.floor(diff / 86400);
     if (days === 1) return 'Yesterday';
-    if (days < 30) return `${days}d ago`;
-    const months = Math.floor(days / 30);
-    if (months < 12) return `${months}mo ago`;
+    if (days < 30) return days + 'd ago';
+    var months = Math.floor(days / 30);
+    if (months < 12) return months + 'mo ago';
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
   }
 
-  async function getAssets(): Promise<PhotoAsset[]> {
+  async function getAssets() {
     try {
-      const res = await fetch('/immich-api/search/metadata?key=' + encodeURIComponent(SHARE_KEY), {
+      var res = await fetch('/immich-api/search/metadata?key=' + encodeURIComponent(SHARE_KEY), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ albumIds: [ALBUM_ID], size: 250, withExif: true })
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const raw = data.assets?.items || [];
+      var data = await res.json();
+      var raw = (data.assets && data.assets.items) ? data.assets.items : [];
 
       return raw
-        .filter((a: { type?: string }) => !a.type || a.type === 'IMAGE')
-        .map((a: { id: string; fileCreatedAt?: string; localDateTime?: string; exifInfo?: any }) => ({
-          id: a.id,
-          date: a.fileCreatedAt || a.localDateTime || '',
-          exif: {
-            lensModel: a.exifInfo?.lensModel,
-            make: a.exifInfo?.make,
-            model: a.exifInfo?.model,
-            fNumber: a.exifInfo?.fNumber,
-            exposureTime: a.exifInfo?.exposureTime,
-            iso: a.exifInfo?.iso,
-            description: a.exifInfo?.description || '',
-            focalLength: a.exifInfo?.focalLength
-          }
-        }));
+        .filter(function(a) { return !a.type || a.type === 'IMAGE'; })
+        .map(function(a) {
+          var exif = a.exifInfo || {};
+          return {
+            id: a.id,
+            date: a.fileCreatedAt || a.localDateTime || '',
+            exif: {
+              lensModel: exif.lensModel,
+              make: exif.make,
+              model: exif.model,
+              fNumber: exif.fNumber,
+              exposureTime: exif.exposureTime,
+              iso: exif.iso,
+              description: exif.description || '',
+              focalLength: exif.focalLength
+            }
+          };
+        });
     } catch (err) {
       console.error('Immich fetch error:', err);
       return [];
@@ -269,25 +291,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   function renderGallery() {
-    const container = document.getElementById('gallery-container');
-    const emptyState = document.getElementById('gallery-empty');
+    var container = document.getElementById('gallery-container');
+    var emptyState = document.getElementById('gallery-empty');
     if (!container) return;
 
-    const userLikes = getLikedIds();
-    let filtered = [...globalAssets];
+    var userLikes = getLikedIds();
+    var filtered = globalAssets.slice();
     if (currentFilter !== 'all') {
-      filtered = filtered.filter(asset => {
-        const desc = asset.exif?.description || '';
-        const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toLowerCase());
-        const fullCam = `${asset.exif?.make || ''} ${asset.exif?.model || ''}`.toLowerCase();
-        if (fullCam.includes('canon')) tags.push('canon');
-        if (fullCam.includes('samsung') || fullCam.includes('galaxy')) tags.push('samsung');
-        return tags.includes(currentFilter.toLowerCase());
+      filtered = filtered.filter(function(asset) {
+        var desc = (asset.exif && asset.exif.description) ? asset.exif.description : '';
+        var tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(function(t) { return t.slice(1).toLowerCase(); });
+        var fullCam = (((asset.exif && asset.exif.make) || '') + ' ' + ((asset.exif && asset.exif.model) || '')).toLowerCase();
+        if (fullCam.indexOf('canon') !== -1) tags.push('canon');
+        if (fullCam.indexOf('samsung') !== -1 || fullCam.indexOf('galaxy') !== -1) tags.push('samsung');
+        return tags.indexOf(currentFilter.toLowerCase()) !== -1;
       });
     }
 
-    filtered.sort((a, b) => {
-      const cmp = (b.date || '').localeCompare(a.date || '');
+    filtered.sort(function(a, b) {
+      var cmp = (b.date || '').localeCompare(a.date || '');
       return sortDescending ? cmp : -cmp;
     });
 
@@ -299,95 +321,92 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     if (emptyState) emptyState.classList.add('hidden');
 
-    container.innerHTML = filtered.map((asset) => {
-      const thumbUrl = `/immich-api/assets/${asset.id}/thumbnail?size=preview&key=${encodeURIComponent(SHARE_KEY)}`;
-      const exif = asset.exif || {};
-      const lens = exif.lensModel || '';
-      const make = (exif.make || '').trim();
-      const rawModel = (exif.model || '').trim();
-      const cleanMake = make ? make.charAt(0).toUpperCase() + make.slice(1) : '';
-      let camera = 'Digital Capture';
+    container.innerHTML = filtered.map(function(asset) {
+      var thumbUrl = '/immich-api/assets/' + asset.id + '/thumbnail?size=preview&key=' + encodeURIComponent(SHARE_KEY);
+      var exif = asset.exif || {};
+      var lens = exif.lensModel || '';
+      var make = (exif.make || '').trim();
+      var rawModel = (exif.model || '').trim();
+      var cleanMake = make ? make.charAt(0).toUpperCase() + make.slice(1) : '';
+      var camera = 'Digital Capture';
       if (rawModel) {
-        camera = rawModel.toLowerCase().startsWith(cleanMake.toLowerCase())
+        camera = rawModel.toLowerCase().indexOf(cleanMake.toLowerCase()) === 0
           ? rawModel
           : [cleanMake, rawModel].filter(Boolean).join(' ');
       } else if (cleanMake) {
         camera = cleanMake;
       }
 
-      const isPhoneLens = /wide-angle|telephoto|ultra-wide/i.test(lens);
-      const desc = exif.description || '';
-      const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toUpperCase());
-      const fullCam = `${make} ${rawModel}`.toLowerCase();
-      if (fullCam.includes('canon')) {
-        if (!tags.includes('CANON')) tags.push('CANON');
-      } else if (fullCam.includes('samsung') || fullCam.includes('galaxy')) {
-        if (!tags.includes('SAMSUNG')) tags.push('SAMSUNG');
+      var isPhoneLens = /wide-angle|telephoto|ultra-wide/i.test(lens);
+      var desc = exif.description || '';
+      var tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(function(t) { return t.slice(1).toUpperCase(); });
+      var fullCam = (make + ' ' + rawModel).toLowerCase();
+      if (fullCam.indexOf('canon') !== -1) {
+        if (tags.indexOf('CANON') === -1) tags.push('CANON');
+      } else if (fullCam.indexOf('samsung') !== -1 || fullCam.indexOf('galaxy') !== -1) {
+        if (tags.indexOf('SAMSUNG') === -1) tags.push('SAMSUNG');
       }
 
-      const landmarkTag = tags.find(t => !['CANON', 'SAMSUNG', 'APPLE', 'SONY', 'NIKON', 'LANDSCAPE', 'PORTRAIT', 'NIGHT', 'MACRO'].includes(t));
-      const displayTitle = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (lens && !isPhoneLens ? lens : (desc ? desc.replace(/#[a-z0-9_-]+/gi, '').trim() : camera));
+      var landmarkTag = tags.find(function(t) {
+        return ['CANON', 'SAMSUNG', 'APPLE', 'SONY', 'NIKON', 'LANDSCAPE', 'PORTRAIT', 'NIGHT', 'MACRO'].indexOf(t) === -1;
+      });
+      var displayTitle = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (lens && !isPhoneLens ? lens : (desc ? desc.replace(/#[a-z0-9_-]+/gi, '').trim() : camera));
 
-      const fStop = exif.fNumber ? `f/${exif.fNumber}` : '';
-      const shutter = exif.exposureTime ? `${exif.exposureTime}s` : '';
-      const iso = exif.iso ? `ISO ${exif.iso}` : '';
-      const settings = [fStop, shutter, iso].filter(Boolean).join('  ·  ');
-      const timeAgo = formatRelativeDate(asset.date);
-      const isLiked = userLikes.has(asset.id);
+      var fStop = exif.fNumber ? ('f/' + exif.fNumber) : '';
+      var shutter = exif.exposureTime ? (exif.exposureTime + 's') : '';
+      var iso = exif.iso ? ('ISO ' + exif.iso) : '';
+      var settings = [fStop, shutter, iso].filter(Boolean).join('  ·  ');
+      var timeAgo = formatRelativeDate(asset.date);
+      var isLiked = userLikes.has(asset.id);
 
-      return `
-        <article class="photo-card break-inside-avoid mb-6 p-4 sm:p-5 bg-slate-900/60 border border-slate-800/90 rounded-2xl hover:border-slate-700 transition duration-300 animate-fade-in flex flex-col justify-between group">
-          <button type="button"
-            class="photo-trigger w-full overflow-hidden bg-slate-950 block rounded-xl mb-3 relative cursor-zoom-in text-left focus:outline-none"
-            data-id="${asset.id}" title="Click to view full photograph & telemetry">
-            <img src="${esc(thumbUrl)}" alt="${esc(displayTitle)}" loading="lazy" draggable="false" oncontextmenu="return false;"
-              class="w-full h-auto object-cover rounded-xl group-hover:scale-[1.01] transition-transform duration-300 pointer-events-none select-none" />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 rounded-xl">
-              <span class="text-xs text-white bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded-md border border-slate-700 font-mono">View Photo &amp; Telemetry ↗</span>
-            </div>
-          </button>
-          
-          <div class="space-y-3 font-mono">
-            <div class="flex justify-between items-baseline gap-2">
-              <span class="text-xs font-semibold text-slate-100 truncate">${esc(displayTitle)}</span>
-              <span class="text-[10px] text-slate-500 whitespace-nowrap">${timeAgo}</span>
-            </div>
-            <div class="flex flex-wrap gap-1.5">
-              ${tags.map(t => `<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-800/80 text-slate-400 border border-slate-700/80">${esc(t)}</span>`).join('')}
-            </div>
-            <div class="flex justify-between items-center text-[11px] text-slate-500 pt-2 border-t border-slate-800/60">
-              <span class="text-slate-400">${esc(camera)}</span>
-              <button type="button" class="like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer ${isLiked ? 'text-rose-400 bg-rose-950/40 border border-rose-800/50' : 'text-slate-500 hover:text-slate-300'}"
-                      data-id="${asset.id}" title="Heart this photograph">
-                <span class="heart-symbol text-xs">${isLiked ? '&hearts;' : '&#9825;'}</span>
-                <span class="text-[10px]">${isLiked ? 'LIKED' : 'LIKE'}</span>
-              </button>
-            </div>
-          </div>
-        </article>`;
+      return '' +
+        '<article class="photo-card break-inside-avoid mb-6 p-4 sm:p-5 bg-slate-900/60 border border-slate-800/90 rounded-2xl hover:border-slate-700 transition duration-300 animate-fade-in flex flex-col justify-between group">' +
+          '<button type="button" class="photo-trigger w-full overflow-hidden bg-slate-950 block rounded-xl mb-3 relative cursor-zoom-in text-left focus:outline-none" data-id="' + asset.id + '" title="Click to view full photograph & telemetry">' +
+            '<img src="' + esc(thumbUrl) + '" alt="' + esc(displayTitle) + '" loading="lazy" draggable="false" oncontextmenu="return false;" class="w-full h-auto object-cover rounded-xl group-hover:scale-[1.01] transition-transform duration-300 pointer-events-none select-none" />' +
+            '<div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 rounded-xl">' +
+              '<span class="text-xs text-white bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded-md border border-slate-700 font-mono">View Photo &amp; Telemetry ↗</span>' +
+            '</div>' +
+          '</button>' +
+          '<div class="space-y-3 font-mono">' +
+            '<div class="flex justify-between items-baseline gap-2">' +
+              '<span class="text-xs font-semibold text-slate-100 truncate">' + esc(displayTitle) + '</span>' +
+              '<span class="text-[10px] text-slate-500 whitespace-nowrap">' + timeAgo + '</span>' +
+            '</div>' +
+            '<div class="flex flex-wrap gap-1.5">' +
+              tags.map(function(t) { return '<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-800/80 text-slate-400 border border-slate-700/80">' + esc(t) + '</span>'; }).join('') +
+            '</div>' +
+            '<div class="flex justify-between items-center text-[11px] text-slate-500 pt-2 border-t border-slate-800/60">' +
+              '<span class="text-slate-400">' + esc(camera) + '</span>' +
+              '<button type="button" class="like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer ' + (isLiked ? 'text-rose-400 bg-rose-950/40 border border-rose-800/50' : 'text-slate-500 hover:text-slate-300') + '" data-id="' + asset.id + '" title="Heart this photograph">' +
+                '<span class="heart-symbol text-xs">' + (isLiked ? '&hearts;' : '&#9825;') + '</span>' +
+                '<span class="text-[10px]">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+        '</article>';
     }).join('');
 
     bindInteractiveEvents();
   }
 
-  function buildFilterButtons(allTags: Set<string>) {
-    const filterBar = document.getElementById('filter-bar');
+  function buildFilterButtons(allTags) {
+    var filterBar = document.getElementById('filter-bar');
     if (!filterBar) return;
 
-    filterBar.querySelectorAll('.dynamic-tag-btn').forEach(b => b.remove());
+    filterBar.querySelectorAll('.dynamic-tag-btn').forEach(function(b) { b.remove(); });
 
-    allTags.forEach((tag) => {
-      const btn = document.createElement('button');
+    allTags.forEach(function(tag) {
+      var btn = document.createElement('button');
       btn.setAttribute('data-filter', tag.toLowerCase());
       btn.className = 'filter-btn dynamic-tag-btn px-3 py-1 text-xs font-mono rounded bg-slate-800/60 text-slate-400 border border-slate-700 hover:text-white transition-colors uppercase cursor-pointer';
       btn.textContent = tag;
       filterBar.appendChild(btn);
     });
 
-    const buttons = document.querySelectorAll('.filter-btn');
-    buttons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        buttons.forEach((b) => {
+    var buttons = document.querySelectorAll('.filter-btn');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        buttons.forEach(function(b) {
           b.classList.remove('active', 'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/30');
           b.classList.add('bg-slate-800/60', 'text-slate-400', 'border-slate-700');
         });
@@ -401,75 +420,77 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   function bindInteractiveEvents() {
-    document.querySelectorAll('.like-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    document.querySelectorAll('.like-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
         e.stopPropagation();
-        const id = btn.getAttribute('data-id');
+        var id = btn.getAttribute('data-id');
         if (id) toggleLike(id);
       });
     });
 
-    document.querySelectorAll('.photo-trigger').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
+    document.querySelectorAll('.photo-trigger').forEach(function(trigger) {
+      trigger.addEventListener('click', function(e) {
         e.preventDefault();
-        const id = trigger.getAttribute('data-id');
-        const asset = globalAssets.find(a => a.id === id);
+        var id = trigger.getAttribute('data-id');
+        var asset = globalAssets.find(function(a) { return a.id === id; });
         if (asset) openLightbox(asset);
       });
     });
   }
 
-  function openLightbox(asset: PhotoAsset) {
+  function openLightbox(asset) {
     activeLightboxAsset = asset;
-    const modal = document.getElementById('lightbox-modal');
-    const modalImg = document.getElementById('lightbox-img') as HTMLImageElement | null;
-    const modalTitle = document.getElementById('lightbox-title');
-    const modalDevice = document.getElementById('lightbox-device');
-    const modalDate = document.getElementById('lightbox-date');
-    const modalSettings = document.getElementById('lightbox-settings');
-    const modalTags = document.getElementById('lightbox-tags');
-    const likeBtn = document.getElementById('lightbox-like-btn');
+    var modal = document.getElementById('lightbox-modal');
+    var modalImg = document.getElementById('lightbox-img');
+    var modalTitle = document.getElementById('lightbox-title');
+    var modalDevice = document.getElementById('lightbox-device');
+    var modalDate = document.getElementById('lightbox-date');
+    var modalSettings = document.getElementById('lightbox-settings');
+    var modalTags = document.getElementById('lightbox-tags');
+    var likeBtn = document.getElementById('lightbox-like-btn');
     if (!modal || !modalImg) return;
 
     if (modal.parentElement !== document.body) {
       document.body.appendChild(modal);
     }
 
-    const exif = asset.exif || {};
-    const make = (exif.make || '').trim();
-    const rawModel = (exif.model || '').trim();
-    const cleanMake = make ? make.charAt(0).toUpperCase() + make.slice(1) : '';
-    const camera = rawModel 
-      ? (rawModel.toLowerCase().startsWith(cleanMake.toLowerCase()) ? rawModel : [cleanMake, rawModel].filter(Boolean).join(' '))
+    var exif = asset.exif || {};
+    var make = (exif.make || '').trim();
+    var rawModel = (exif.model || '').trim();
+    var cleanMake = make ? make.charAt(0).toUpperCase() + make.slice(1) : '';
+    var camera = rawModel 
+      ? (rawModel.toLowerCase().indexOf(cleanMake.toLowerCase()) === 0 ? rawModel : [cleanMake, rawModel].filter(Boolean).join(' '))
       : (cleanMake || 'Digital Capture');
 
-    const desc = exif.description || '';
-    const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toUpperCase());
-    const landmarkTag = tags.find(t => !['CANON', 'SAMSUNG', 'APPLE', 'SONY', 'NIKON', 'LANDSCAPE', 'PORTRAIT', 'NIGHT', 'MACRO'].includes(t));
-    const title = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (exif.lensModel || camera);
+    var desc = exif.description || '';
+    var tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(function(t) { return t.slice(1).toUpperCase(); });
+    var landmarkTag = tags.find(function(t) {
+      return ['CANON', 'SAMSUNG', 'APPLE', 'SONY', 'NIKON', 'LANDSCAPE', 'PORTRAIT', 'NIGHT', 'MACRO'].indexOf(t) === -1;
+    });
+    var title = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (exif.lensModel || camera);
 
-    const fStop = exif.fNumber ? `f/${exif.fNumber}` : '';
-    const shutter = exif.exposureTime ? `${exif.exposureTime}s` : '';
-    const iso = exif.iso ? `ISO ${exif.iso}` : '';
-    const focal = exif.focalLength ? `${exif.focalLength}mm` : '';
-    const settings = [focal, fStop, shutter, iso].filter(Boolean).join('  ·  ');
+    var fStop = exif.fNumber ? ('f/' + exif.fNumber) : '';
+    var shutter = exif.exposureTime ? (exif.exposureTime + 's') : '';
+    var iso = exif.iso ? ('ISO ' + exif.iso) : '';
+    var focal = exif.focalLength ? (exif.focalLength + 'mm') : '';
+    var settings = [focal, fStop, shutter, iso].filter(Boolean).join('  ·  ');
 
-    const thumbUrl = `/immich-api/assets/${asset.id}/thumbnail?size=preview&key=${encodeURIComponent(SHARE_KEY)}`;
+    var thumbUrl = '/immich-api/assets/' + asset.id + '/thumbnail?size=preview&key=' + encodeURIComponent(SHARE_KEY);
     modalImg.src = thumbUrl;
     if (modalTitle) modalTitle.textContent = title;
-    if (modalDevice) modalDevice.textContent = `${camera} ${exif.lensModel ? `• ${exif.lensModel}` : ''}`;
+    if (modalDevice) modalDevice.textContent = camera + (exif.lensModel ? (' • ' + exif.lensModel) : '');
     if (modalDate) modalDate.textContent = asset.date ? new Date(asset.date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
-    if (modalSettings) modalSettings.innerHTML = settings ? `<span class="bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-900/60">${settings}</span>` : '';
+    if (modalSettings) modalSettings.innerHTML = settings ? ('<span class="bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-900/60">' + settings + '</span>') : '';
     if (modalTags) {
-      modalTags.innerHTML = tags.map(t => `<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-900 text-slate-400 border border-slate-800">#${esc(t)}</span>`).join('');
+      modalTags.innerHTML = tags.map(function(t) { return '<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-900 text-slate-400 border border-slate-800">#' + esc(t) + '</span>'; }).join('');
     }
 
-    const isLiked = getLikedIds().has(asset.id);
+    var isLiked = getLikedIds().has(asset.id);
     if (likeBtn) {
       likeBtn.className = isLiked 
         ? 'px-2.5 py-1 rounded bg-rose-950/40 border border-rose-700 text-rose-400 transition flex items-center gap-1.5 cursor-pointer'
         : 'px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 transition flex items-center gap-1.5 cursor-pointer';
-      likeBtn.innerHTML = `<span class="heart-icon">${isLiked ? '&hearts;' : '&#9825;'}</span><span class="like-label">${isLiked ? 'LIKED' : 'LIKE'}</span>`;
+      likeBtn.innerHTML = '<span class="heart-icon">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="like-label">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
     }
 
     modal.style.display = 'flex';
@@ -477,23 +498,79 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   function closeLightbox() {
-    const modal = document.getElementById('lightbox-modal');
+    var modal = document.getElementById('lightbox-modal');
     if (!modal) return;
     modal.style.display = 'none';
-    const img = document.getElementById('lightbox-img') as HTMLImageElement | null;
+    var img = document.getElementById('lightbox-img');
     if (img) img.src = '';
     document.body.style.overflow = '';
     activeLightboxAsset = null;
   }
 
+  function initPhotosTurnstile() {
+    var container = document.getElementById('photos-turnstile-container');
+    var status = document.getElementById('photos-gatekeeper-status');
+
+    if (!container || !window.turnstile) return;
+
+    if (turnstileWidgetId !== null) {
+      window.turnstile.reset(turnstileWidgetId);
+      return;
+    }
+
+    turnstileWidgetId = window.turnstile.render('#photos-turnstile-container', {
+      sitekey: siteKey,
+      theme: 'dark',
+      callback: function(token) {
+        verifiedToken = token;
+        resolvedEmail = atob(ENCODED_INBOX);
+
+        if (status) {
+          status.textContent = "Challenge verified. Unlocking dispatch console...";
+          status.className = "text-emerald-400 text-[11px]";
+        }
+
+        setTimeout(function() {
+          var gatekeeper = document.getElementById('photos-gatekeeper');
+          var composer = document.getElementById('photos-composer-stage');
+          var emailDisplay = document.getElementById('photos-unlocked-email');
+
+          if (gatekeeper) gatekeeper.classList.add('hidden');
+          if (composer) {
+            composer.classList.remove('hidden');
+            composer.classList.add('flex');
+          }
+          if (emailDisplay) {
+            emailDisplay.textContent = resolvedEmail;
+          }
+          document.getElementById('sender-name')?.focus();
+        }, 350);
+      },
+      'expired-callback': function() {
+        verifiedToken = null;
+        resolvedEmail = null;
+        var gatekeeper = document.getElementById('photos-gatekeeper');
+        var composer = document.getElementById('photos-composer-stage');
+        if (gatekeeper) gatekeeper.classList.remove('hidden');
+        if (composer) {
+          composer.classList.add('hidden');
+          composer.classList.remove('flex');
+        }
+        if (status) {
+          status.textContent = "Session expired. Please reverify.";
+          status.className = "text-amber-400 text-[11px]";
+        }
+      }
+    });
+  }
+
   function setupDispatcherModal() {
-    const modal = document.getElementById('dispatch-modal');
-    const openBtn = document.getElementById('open-dispatch-btn');
-    const closeBtn = document.getElementById('close-dispatch-btn');
-    const copyBtn = document.getElementById('copy-email-btn');
-    const form = document.getElementById('contact-composer');
-    const status = document.getElementById('dispatch-status');
-    const targetEmail = 'contact@mvoorhies.com';
+    var modal = document.getElementById('dispatch-modal');
+    var openBtn = document.getElementById('open-dispatch-btn');
+    var closeBtn = document.getElementById('close-dispatch-btn');
+    var copyBtn = document.getElementById('copy-email-btn');
+    var form = document.getElementById('contact-composer');
+    var status = document.getElementById('dispatch-status');
 
     if (!modal || !openBtn) return;
 
@@ -502,61 +579,85 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     function openModal() {
-      if (!modal) return;
-      modal.style.display = 'flex';
-      (document.getElementById('sender-name') as HTMLInputElement)?.focus();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
       document.body.style.overflow = 'hidden';
+
+      if (!verifiedToken) {
+        var gatekeeper = document.getElementById('photos-gatekeeper');
+        var composer = document.getElementById('photos-composer-stage');
+        if (gatekeeper) gatekeeper.classList.remove('hidden');
+        if (composer) {
+          composer.classList.add('hidden');
+          composer.classList.remove('flex');
+        }
+
+        if (window.turnstile) {
+          initPhotosTurnstile();
+        } else {
+          var check = setInterval(function() {
+            if (window.turnstile) {
+              clearInterval(check);
+              initPhotosTurnstile();
+            }
+          }, 100);
+        }
+      }
     }
 
     function closeModal() {
-      if (!modal) return;
-      modal.style.display = 'none';
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
       document.body.style.overflow = '';
     }
 
-    openBtn.addEventListener('click', (e) => {
+    openBtn.addEventListener('click', function(e) {
       e.preventDefault();
       openModal();
     });
 
     closeBtn?.addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener('click', function(e) {
       if (e.target === modal) closeModal();
     });
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
     });
 
-    copyBtn?.addEventListener('click', async () => {
+    copyBtn?.addEventListener('click', async function() {
+      if (!resolvedEmail) return;
       try {
-        await navigator.clipboard.writeText(targetEmail);
+        await navigator.clipboard.writeText(resolvedEmail);
         copyBtn.textContent = 'COPIED!';
-        copyBtn.className = 'self-start sm:self-auto text-[10px] px-2 py-0.5 bg-emerald-950 border border-emerald-700 text-emerald-400 rounded transition';
-        setTimeout(() => {
+        copyBtn.className = 'px-2.5 py-1 bg-emerald-950 border border-emerald-600 text-emerald-400 rounded text-[10px] transition shrink-0 cursor-pointer';
+        setTimeout(function() {
           copyBtn.textContent = 'COPY';
-          copyBtn.className = 'self-start sm:self-auto text-[10px] px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded transition cursor-pointer';
+          copyBtn.className = 'px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded text-[10px] transition shrink-0 cursor-pointer';
         }, 2000);
-      } catch {
-        window.location.href = `mailto:${targetEmail}`;
+      } catch (err) {
+        window.location.href = 'mailto:' + resolvedEmail;
       }
     });
 
-    form?.addEventListener('submit', (e) => {
+    form?.addEventListener('submit', function(e) {
       e.preventDefault();
-      const sender = (document.getElementById('sender-name') as HTMLInputElement)?.value.trim() || 'Anonymous';
-      const subject = (document.getElementById('msg-subject') as HTMLInputElement)?.value.trim() || 'Photo Inquiry';
-      const body = (document.getElementById('msg-body') as HTMLTextAreaElement)?.value.trim() || '';
+      if (!verifiedToken || !resolvedEmail) return;
 
-      const formattedBody = `${body}\n\n---\nSent by: ${sender}\nTransmitted from: ${window.location.origin}/photos`;
-      const mailtoUri = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(formattedBody)}`;
+      var sender = (document.getElementById('sender-name'))?.value.trim() || 'Anonymous';
+      var subject = (document.getElementById('msg-subject'))?.value.trim() || 'Photo Inquiry';
+      var body = (document.getElementById('msg-body'))?.value.trim() || '';
+
+      var formattedBody = body + '\n\n---\nSent by: ' + sender + '\nTransmitted from: ' + window.location.origin + '/photos\nCF-Turnstile: [Verified: ' + verifiedToken.slice(0, 16) + '...]';
+      var mailtoUri = 'mailto:' + resolvedEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(formattedBody);
 
       if (status) {
         status.textContent = 'Launching email client...';
         status.className = 'text-emerald-400 text-[11px]';
       }
+
       window.location.href = mailtoUri;
-      setTimeout(() => {
+
+      setTimeout(function() {
         closeModal();
         if (status) {
           status.textContent = 'Ready to transmit.';
@@ -567,29 +668,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   async function initLiveGallery() {
-    const loader = document.getElementById('gallery-loader');
-    const sortBtn = document.getElementById('sort-toggle-btn');
-    const sortLabel = document.getElementById('sort-label');
-    const sortIcon = document.getElementById('sort-icon');
+    var loader = document.getElementById('gallery-loader');
+    var sortBtn = document.getElementById('sort-toggle-btn');
+    var sortLabel = document.getElementById('sort-label');
+    var sortIcon = document.getElementById('sort-icon');
 
     try {
       globalAssets = await getAssets();
       if (loader) loader.remove();
 
-      const allFoundTags = new Set<string>();
-      globalAssets.forEach(asset => {
-        const desc = asset.exif?.description || '';
-        const tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(t => t.slice(1).toUpperCase());
-        const fullCam = `${asset.exif?.make || ''} ${asset.exif?.model || ''}`.toLowerCase();
-        if (fullCam.includes('canon')) allFoundTags.add('CANON');
-        if (fullCam.includes('samsung') || fullCam.includes('galaxy')) allFoundTags.add('SAMSUNG');
-        tags.forEach(t => allFoundTags.add(t));
+      var allFoundTags = new Set();
+      globalAssets.forEach(function(asset) {
+        var desc = (asset.exif && asset.exif.description) ? asset.exif.description : '';
+        var tags = (desc.match(/#[a-z0-9_-]+/gi) || []).map(function(t) { return t.slice(1).toUpperCase(); });
+        var fullCam = (((asset.exif && asset.exif.make) || '') + ' ' + ((asset.exif && asset.exif.model) || '')).toLowerCase();
+        if (fullCam.indexOf('canon') !== -1) allFoundTags.add('CANON');
+        if (fullCam.indexOf('samsung') !== -1 || fullCam.indexOf('galaxy') !== -1) allFoundTags.add('SAMSUNG');
+        tags.forEach(function(t) { allFoundTags.add(t); });
       });
 
       buildFilterButtons(allFoundTags);
       renderGallery();
 
-      sortBtn?.addEventListener('click', () => {
+      sortBtn?.addEventListener('click', function() {
         sortDescending = !sortDescending;
         if (sortLabel && sortIcon) {
           sortLabel.textContent = sortDescending ? 'NEWEST' : 'OLDEST';
@@ -599,67 +700,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
 
       document.getElementById('lightbox-close')?.addEventListener('click', closeLightbox);
-      document.getElementById('lightbox-modal')?.addEventListener('click', (e) => {
+      document.getElementById('lightbox-modal')?.addEventListener('click', function(e) {
         if (e.target === document.getElementById('lightbox-modal')) closeLightbox();
       });
-      document.getElementById('lightbox-like-btn')?.addEventListener('click', () => {
+      document.getElementById('lightbox-like-btn')?.addEventListener('click', function() {
         if (activeLightboxAsset) toggleLike(activeLightboxAsset.id);
       });
-      window.addEventListener('keydown', (e) => {
+      window.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeLightbox();
       });
-
-      setupDispatcherModal();
-    } catch (err: any) {
-      if (loader) loader.innerHTML = `<span class="text-rose-400 font-mono text-xs">[!] Telemetry offline</span>`;
+    } catch (err) {
+      if (loader) loader.innerHTML = '<span class="text-rose-400 font-mono text-xs">[!] Telemetry offline</span>';
     }
   }
 
-  initLiveGallery();
-  document.addEventListener('astro:after-swap', initLiveGallery);
-</script>
-
-
-<script>
-  function setupLightboxDismiss() {
-    const modal = document.getElementById("lightbox-modal");
-    const closeBtn = document.getElementById("lightbox-close");
-    const innerContent = modal ? modal.querySelector(".relative, [data-lightbox-content]") : null;
-
-    if (!modal) return;
-
-    function close() {
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-      const img = modal.querySelector("img");
-      if (img) img.src = "";
-    }
-
-    // 1. Explicit button trigger
-    closeBtn?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      close();
-    });
-
-    // 2. Click or tap outside (backdrop)
-    modal.addEventListener("click", (e) => {
-      if (innerContent) {
-        if (!innerContent.contains(e.target)) {
-          close();
-        }
-      } else if (e.target === modal) {
-        close();
-      }
-    });
-
-    // 3. Escape key listener
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !modal.classList.contains("hidden")) {
-        close();
-      }
-    });
+  function initPage() {
+    initLiveGallery();
+    setupDispatcherModal();
   }
 
-  setupLightboxDismiss();
-  document.addEventListener("astro:after-swap", setupLightboxDismiss);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPage);
+  } else {
+    initPage();
+  }
+  document.addEventListener('astro:after-swap', initPage);
 </script>
