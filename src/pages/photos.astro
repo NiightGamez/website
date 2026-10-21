@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "";
-const immichShareKey = import.meta.env.PUBLIC_IMMICH_SHARE_KEY || "";
-const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
+const shareKey = import.meta.env.PUBLIC_IMMICH_SHARE_KEY || "";
+const albumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
 ---
 
 <BaseLayout title="Photography & Visual Work" currentPage="photos">
@@ -15,7 +14,7 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
       Photography &amp; Visual Studies
     </h1>
     <p class="text-sm sm:text-base text-slate-300 leading-relaxed font-sans">
-      A collection of landscape, environmental, and observational photography. Focused on natural textures, low light, and quiet framing.
+      Just a running log of photos I take while wandering around outdoors—mostly Appalachian woods, old bridges, water, and whatever quiet spots catch my eye. Shot primarily on Canon glass, edited by hand, and pulled straight from my self-hosted storage.
     </p>
   </header>
 
@@ -36,7 +35,7 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
     </div>
   </div>
 
-  <!-- Masonry Gallery (2-Column Max on Desktop) -->
+  <!-- Masonry Gallery -->
   <section id="gallery-container" class="columns-1 sm:columns-2 max-w-4xl mx-auto gap-6 mb-16 space-y-6">
     <div id="gallery-loader" class="col-span-full py-16 flex flex-col items-center justify-center gap-3 text-slate-400 font-mono text-xs">
       <div class="w-6 h-6 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"></div>
@@ -64,20 +63,45 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
   </section>
 
   <!-- Fullscreen Lightbox -->
-  <div id="lightbox-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(12px);" class="flex-col justify-between p-4 sm:p-6 select-none">
-    <div class="w-full flex justify-between items-center text-xs font-mono text-slate-400 max-w-6xl mx-auto shrink-0">
-      <span class="text-emerald-400 tracking-wider">FRAME // TELEMETRY HUD</span>
-      <button id="lightbox-close" type="button" class="text-slate-400 hover:text-white bg-slate-900/80 border border-slate-700 px-3 py-1.5 rounded font-mono text-xs transition cursor-pointer">
-        &#10005; ESC
+  <div id="lightbox-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(2, 6, 23, 0.96); backdrop-filter: blur(14px);" class="flex flex-col justify-between p-3 sm:p-6 select-none transition-colors duration-300">
+    <!-- Top Header HUD -->
+    <div id="lightbox-top-bar" class="w-full flex justify-between items-center text-xs font-mono text-slate-400 max-w-6xl mx-auto shrink-0 transition-opacity duration-200">
+      <span id="lightbox-counter" class="text-emerald-400 tracking-wider">FRAME // TELEMETRY HUD</span>
+      <div class="flex items-center gap-2">
+        <button id="lightbox-focus-btn" type="button" class="text-slate-400 hover:text-white bg-slate-900/80 border border-slate-700 px-2.5 py-1.5 rounded font-mono text-xs transition cursor-pointer" title="Toggle Focus Mode (Key: F)">
+          [FOCUS]
+        </button>
+        <button id="lightbox-share-btn" type="button" class="text-slate-400 hover:text-emerald-400 bg-slate-900/80 border border-slate-700 px-2.5 py-1.5 rounded font-mono text-xs transition cursor-pointer" title="Copy direct link">
+          #SHARE
+        </button>
+        <button id="lightbox-close" type="button" class="text-slate-400 hover:text-white bg-slate-900/80 border border-slate-700 px-3 py-1.5 rounded font-mono text-xs transition cursor-pointer">
+          &#10005; ESC
+        </button>
+      </div>
+    </div>
+
+    <!-- Central Image Viewport with Floating Nav Chevrons -->
+    <div id="lightbox-viewport" class="flex-1 min-h-0 w-full flex items-center justify-center p-1 sm:p-2 my-auto overflow-hidden relative">
+      <button id="lightbox-prev-btn" type="button" class="absolute left-2 sm:left-6 z-20 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-slate-950/70 hover:bg-slate-900 border border-slate-700/80 text-white text-xl sm:text-2xl font-mono shadow-2xl transition-all opacity-80 hover:opacity-100 cursor-pointer active:scale-95" aria-label="Previous photograph">
+        &#8249;
+      </button>
+
+      <div class="relative max-h-full max-w-full flex items-center justify-center">
+        <img id="lightbox-img" src="" alt="" draggable="false" oncontextmenu="return false;"
+          class="max-h-[72vh] sm:max-h-[76vh] max-w-[94vw] sm:max-w-full w-auto h-auto object-contain rounded-lg shadow-2xl pointer-events-none select-none border border-slate-800/80" />
+        
+        <div id="lightbox-pop-heart" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-all duration-300 transform scale-50">
+          <span class="text-rose-500 text-6xl sm:text-7xl drop-shadow-[0_0_20px_rgba(244,63,94,0.6)]">&hearts;</span>
+        </div>
+      </div>
+
+      <button id="lightbox-next-btn" type="button" class="absolute right-2 sm:right-6 z-20 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-slate-950/70 hover:bg-slate-900 border border-slate-700/80 text-white text-xl sm:text-2xl font-mono shadow-2xl transition-all opacity-80 hover:opacity-100 cursor-pointer active:scale-95" aria-label="Next photograph">
+        &#8250;
       </button>
     </div>
 
-    <div class="flex-1 min-h-0 w-full flex items-center justify-center p-2 my-2 overflow-hidden">
-      <img id="lightbox-img" src="" alt="" draggable="false" oncontextmenu="return false;"
-        class="max-h-full max-w-full w-auto h-auto object-contain rounded-lg shadow-2xl pointer-events-none select-none border border-slate-800/80" />
-    </div>
-
-    <div class="w-full max-w-4xl mx-auto bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs text-slate-300 shrink-0 backdrop-blur">
+    <!-- Metadata & Telemetry HUD Panel -->
+    <div id="lightbox-hud" class="w-full max-w-4xl mx-auto bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs text-slate-300 shrink-0 backdrop-blur transition-opacity duration-200">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2 pb-2 border-b border-slate-800/80">
         <div>
           <span id="lightbox-title" class="text-white font-bold text-sm block"></span>
@@ -92,13 +116,15 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
         </div>
       </div>
       <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-        <div id="lightbox-settings" class="text-emerald-400"></div>
+        <button id="lightbox-settings-btn" type="button" class="text-emerald-400 text-left hover:text-emerald-300 transition-colors cursor-pointer" title="Click to toggle formatted EXIF / Raw JSON telemetry">
+          <span id="lightbox-settings"></span>
+        </button>
         <div id="lightbox-tags" class="flex flex-wrap gap-1.5"></div>
       </div>
     </div>
   </div>
 
-  <!-- Terminal Dispatcher Modal with Turnstile Gatekeeper -->
+  <!-- Terminal Dispatcher Modal -->
   <div id="dispatch-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-xl shadow-2xl overflow-hidden font-mono text-xs flex flex-col animate-fade-in">
       <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex items-center justify-between text-slate-400">
@@ -111,7 +137,6 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
         <button id="close-dispatch-btn" type="button" class="text-slate-500 hover:text-white transition cursor-pointer">ESC</button>
       </div>
 
-      <!-- GATEKEEPER: Captcha Check First -->
       <div id="photos-gatekeeper" class="p-8 flex flex-col items-center justify-center text-center space-y-4">
         <div class="inline-block px-2.5 py-0.5 bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 text-[11px] rounded">
           ❯ CLOUDFLARE_EDGE_VERIFICATION
@@ -128,9 +153,7 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
         </span>
       </div>
 
-      <!-- COMPOSER: Unlocks only after Turnstile completes -->
       <div id="photos-composer-stage" class="hidden flex-col">
-        <!-- Direct Email Bar with Concealed Address until Verified -->
         <div class="bg-slate-950/60 border-b border-slate-800/80 px-5 py-3 flex items-center justify-between gap-3">
           <div class="flex items-center gap-2 overflow-hidden">
             <span class="text-emerald-400 font-semibold uppercase text-[10px] sm:text-xs shrink-0">[DIRECT]</span>
@@ -176,18 +199,40 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
 
     </div>
   </div>
+
+<style is:global>
+  html.lightbox-open,
+  html.lightbox-open body {
+    overflow: hidden !important;
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE / Edge */
+  }
+  html.lightbox-open::-webkit-scrollbar,
+  html.lightbox-open body::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Chromium */
+    width: 0 !important;
+    height: 0 !important;
+  }
+</style>
+
 </BaseLayout>
 
-<script is:inline define:vars={{ siteKey, immichShareKey, immichAlbumId }}>
-  var SHARE_KEY = immichShareKey;
-  var ALBUM_ID = immichAlbumId;
+<script is:inline define:vars={{ siteKey, shareKey, albumId }}>
+  var SHARE_KEY = shareKey;
+  var ALBUM_ID = albumId;
   var LIKES_KEY = 'mvoorhies_photo_likes';
   var ENCODED_INBOX = "Y29udGFjdEBtdm9vcmhpZXMuY29t";
 
   var globalAssets = [];
+  var currentFilteredAssets = [];
   var currentFilter = 'all';
   var sortDescending = true;
-  var activeLightboxAsset = null;
+  var activeLightboxIndex = -1;
+  var isRawExifMode = false;
+  var isFocusMode = false;
+
+  var touchStartX = 0;
+  var touchStartY = 0;
 
   var turnstileWidgetId = null;
   var verifiedToken = null;
@@ -196,6 +241,26 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
   function esc(s) {
     return String(s || '').replace(/[&<>"']/g, function(c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function getShortId(fullId) {
+    return (fullId || '').slice(0, 8);
+  }
+
+  function copyShortLink(fullId, btnElement) {
+    var shortId = getShortId(fullId);
+    var url = window.location.origin + '/photos#' + shortId;
+    navigator.clipboard.writeText(url).then(function() {
+      if (btnElement) {
+        var prev = btnElement.innerHTML;
+        btnElement.textContent = 'COPIED!';
+        btnElement.classList.add('text-emerald-400');
+        setTimeout(function() {
+          btnElement.innerHTML = prev;
+          btnElement.classList.remove('text-emerald-400');
+        }, 1500);
+      }
     });
   }
 
@@ -223,6 +288,17 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
     return isLiked;
   }
 
+  function triggerHeartBurst() {
+    var pop = document.getElementById('lightbox-pop-heart');
+    if (!pop) return;
+    pop.classList.remove('opacity-0', 'scale-50');
+    pop.classList.add('opacity-100', 'scale-110');
+    setTimeout(function() {
+      pop.classList.remove('opacity-100', 'scale-110');
+      pop.classList.add('opacity-0', 'scale-50');
+    }, 450);
+  }
+
   function updateCardLikeState(assetId, isLiked) {
     document.querySelectorAll('.like-btn[data-id="' + assetId + '"]').forEach(function(btn) {
       btn.className = isLiked 
@@ -232,11 +308,12 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
     });
 
     var lightboxBtn = document.getElementById('lightbox-like-btn');
-    if (lightboxBtn && activeLightboxAsset && activeLightboxAsset.id === assetId) {
+    var activeAsset = currentFilteredAssets[activeLightboxIndex];
+    if (lightboxBtn && activeAsset && activeAsset.id === assetId) {
       lightboxBtn.className = isLiked 
         ? 'px-2.5 py-1 rounded bg-rose-950/40 border border-rose-700 text-rose-400 transition flex items-center gap-1.5 cursor-pointer'
         : 'px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 transition flex items-center gap-1.5 cursor-pointer';
-      lightboxBtn.innerHTML = '<span class="heart-icon">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="like-label">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
+      lightboxBtn.innerHTML = '<span class="heart-icon text-rose-500">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="like-label">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
     }
   }
 
@@ -249,7 +326,7 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
     var days = Math.floor(diff / 86400);
     if (days === 1) return 'Yesterday';
     if (days < 30) return days + 'd ago';
-    var months = Math.floor(days / 30);
+    var months = Math.floor(diff / 30);
     if (months < 12) return months + 'mo ago';
     return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
   }
@@ -313,6 +390,8 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
       return sortDescending ? cmp : -cmp;
     });
 
+    currentFilteredAssets = filtered;
+
     if (filtered.length === 0) {
       container.innerHTML = '';
       if (emptyState) emptyState.classList.remove('hidden');
@@ -321,7 +400,7 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
 
     if (emptyState) emptyState.classList.add('hidden');
 
-    container.innerHTML = filtered.map(function(asset) {
+    container.innerHTML = filtered.map(function(asset, idx) {
       var thumbUrl = '/immich-api/assets/' + asset.id + '/thumbnail?size=preview&key=' + encodeURIComponent(SHARE_KEY);
       var exif = asset.exif || {};
       var lens = exif.lensModel || '';
@@ -352,21 +431,23 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
       });
       var displayTitle = landmarkTag ? landmarkTag.replace(/_/g, ' ') : (lens && !isPhoneLens ? lens : (desc ? desc.replace(/#[a-z0-9_-]+/gi, '').trim() : camera));
 
-      var fStop = exif.fNumber ? ('f/' + exif.fNumber) : '';
-      var shutter = exif.exposureTime ? (exif.exposureTime + 's') : '';
-      var iso = exif.iso ? ('ISO ' + exif.iso) : '';
-      var settings = [fStop, shutter, iso].filter(Boolean).join('  ·  ');
       var timeAgo = formatRelativeDate(asset.date);
       var isLiked = userLikes.has(asset.id);
+      var shortId = getShortId(asset.id);
 
       return '' +
-        '<article class="photo-card break-inside-avoid mb-6 p-4 sm:p-5 bg-slate-900/60 border border-slate-800/90 rounded-2xl hover:border-slate-700 transition duration-300 animate-fade-in flex flex-col justify-between group">' +
-          '<button type="button" class="photo-trigger w-full overflow-hidden bg-slate-950 block rounded-xl mb-3 relative cursor-zoom-in text-left focus:outline-none" data-id="' + asset.id + '" title="Click to view full photograph & telemetry">' +
-            '<img src="' + esc(thumbUrl) + '" alt="' + esc(displayTitle) + '" loading="lazy" draggable="false" oncontextmenu="return false;" class="w-full h-auto object-cover rounded-xl group-hover:scale-[1.01] transition-transform duration-300 pointer-events-none select-none" />' +
-            '<div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 rounded-xl">' +
-              '<span class="text-xs text-white bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded-md border border-slate-700 font-mono">View Photo &amp; Telemetry ↗</span>' +
+        '<article id="' + shortId + '" class="photo-card break-inside-avoid mb-6 p-4 sm:p-5 bg-slate-900/60 border border-slate-800/90 rounded-2xl hover:border-slate-700 transition duration-300 animate-fade-in flex flex-col justify-between group">' +
+          '<div class="relative overflow-hidden rounded-xl mb-3">' +
+            '<button type="button" class="photo-trigger w-full overflow-hidden bg-slate-950 block rounded-xl relative cursor-zoom-in text-left focus:outline-none" data-index="' + idx + '" title="Click to view photograph & telemetry (Double-click to like)">' +
+              '<img src="' + esc(thumbUrl) + '" alt="' + esc(displayTitle) + '" loading="lazy" draggable="false" oncontextmenu="return false;" class="w-full h-auto object-cover rounded-xl group-hover:scale-[1.01] transition-transform duration-300 pointer-events-none select-none" />' +
+              '<div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4 rounded-xl">' +
+                '<span class="text-xs text-white bg-slate-900/80 backdrop-blur px-2.5 py-1 rounded-md border border-slate-700 font-mono">View Photo &amp; Telemetry ↗</span>' +
+              '</div>' +
+            '</button>' +
+            '<div class="card-heart-overlay absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-all duration-300 transform scale-50">' +
+              '<span class="text-rose-500 text-5xl drop-shadow-[0_0_15px_rgba(244,63,94,0.6)]">&hearts;</span>' +
             '</div>' +
-          '</button>' +
+          '</div>' +
           '<div class="space-y-3 font-mono">' +
             '<div class="flex justify-between items-baseline gap-2">' +
               '<span class="text-xs font-semibold text-slate-100 truncate">' + esc(displayTitle) + '</span>' +
@@ -376,7 +457,10 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
               tags.map(function(t) { return '<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-800/80 text-slate-400 border border-slate-700/80">' + esc(t) + '</span>'; }).join('') +
             '</div>' +
             '<div class="flex justify-between items-center text-[11px] text-slate-500 pt-2 border-t border-slate-800/60">' +
-              '<span class="text-slate-400">' + esc(camera) + '</span>' +
+              '<div class="flex items-center gap-2">' +
+                '<span class="text-slate-400 text-[10px] sm:text-[11px]">' + esc(camera) + '</span>' +
+                '<button type="button" class="share-card-btn text-slate-500 hover:text-emerald-400 font-mono text-[10px] transition-colors cursor-pointer" data-id="' + asset.id + '" title="Copy short link">#' + shortId + '</button>' +
+              '</div>' +
               '<button type="button" class="like-btn px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer ' + (isLiked ? 'text-rose-400 bg-rose-950/40 border border-rose-800/50' : 'text-slate-500 hover:text-slate-300') + '" data-id="' + asset.id + '" title="Heart this photograph">' +
                 '<span class="heart-symbol text-xs">' + (isLiked ? '&hearts;' : '&#9825;') + '</span>' +
                 '<span class="text-[10px]">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>' +
@@ -428,30 +512,73 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
       });
     });
 
+    document.querySelectorAll('.share-card-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var id = btn.getAttribute('data-id');
+        if (id) copyShortLink(id, btn);
+      });
+    });
+
     document.querySelectorAll('.photo-trigger').forEach(function(trigger) {
+      var lastTap = 0;
       trigger.addEventListener('click', function(e) {
         e.preventDefault();
-        var id = trigger.getAttribute('data-id');
-        var asset = globalAssets.find(function(a) { return a.id === id; });
-        if (asset) openLightbox(asset);
+        var now = Date.now();
+        var idx = parseInt(trigger.getAttribute('data-index') || '0', 10);
+        var asset = currentFilteredAssets[idx];
+
+        if (now - lastTap < 300) {
+          if (asset) {
+            toggleLike(asset.id);
+            var card = trigger.closest('article');
+            var overlay = card ? card.querySelector('.card-heart-overlay') : null;
+            if (overlay) {
+              overlay.classList.remove('opacity-0', 'scale-50');
+              overlay.classList.add('opacity-100', 'scale-110');
+              setTimeout(function() {
+                overlay.classList.remove('opacity-100', 'scale-110');
+                overlay.classList.add('opacity-0', 'scale-50');
+              }, 400);
+            }
+          }
+          lastTap = 0;
+          return;
+        }
+        lastTap = now;
+
+        setTimeout(function() {
+          if (lastTap !== 0) {
+            openLightbox(idx);
+          }
+        }, 280);
       });
     });
   }
 
-  function openLightbox(asset) {
-    activeLightboxAsset = asset;
-    var modal = document.getElementById('lightbox-modal');
+  function updateLightboxContent() {
+    if (activeLightboxIndex < 0 || activeLightboxIndex >= currentFilteredAssets.length) return;
+    var asset = currentFilteredAssets[activeLightboxIndex];
+    var shortId = getShortId(asset.id);
+    history.replaceState(null, '', '#' + shortId);
+
+    // Keep background feed scroll position matched in the background
+    var card = document.getElementById(shortId);
+    if (card) {
+      card.scrollIntoView({ behavior: 'auto', block: 'center' });
+    }
+
     var modalImg = document.getElementById('lightbox-img');
     var modalTitle = document.getElementById('lightbox-title');
     var modalDevice = document.getElementById('lightbox-device');
     var modalDate = document.getElementById('lightbox-date');
     var modalSettings = document.getElementById('lightbox-settings');
     var modalTags = document.getElementById('lightbox-tags');
+    var counter = document.getElementById('lightbox-counter');
     var likeBtn = document.getElementById('lightbox-like-btn');
-    if (!modal || !modalImg) return;
 
-    if (modal.parentElement !== document.body) {
-      document.body.appendChild(modal);
+    if (counter) {
+      counter.textContent = 'FRAME ' + (activeLightboxIndex + 1) + ' OF ' + currentFilteredAssets.length + ' // ' + shortId.toUpperCase();
     }
 
     var exif = asset.exif || {};
@@ -473,14 +600,16 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
     var shutter = exif.exposureTime ? (exif.exposureTime + 's') : '';
     var iso = exif.iso ? ('ISO ' + exif.iso) : '';
     var focal = exif.focalLength ? (exif.focalLength + 'mm') : '';
-    var settings = [focal, fStop, shutter, iso].filter(Boolean).join('  ·  ');
+    var formattedSettings = [focal, fStop, shutter, iso].filter(Boolean).join('  ·  ');
 
     var thumbUrl = '/immich-api/assets/' + asset.id + '/thumbnail?size=preview&key=' + encodeURIComponent(SHARE_KEY);
-    modalImg.src = thumbUrl;
+    if (modalImg) modalImg.src = thumbUrl;
     if (modalTitle) modalTitle.textContent = title;
     if (modalDevice) modalDevice.textContent = camera + (exif.lensModel ? (' • ' + exif.lensModel) : '');
     if (modalDate) modalDate.textContent = asset.date ? new Date(asset.date).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
-    if (modalSettings) modalSettings.innerHTML = settings ? ('<span class="bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-900/60">' + settings + '</span>') : '';
+    
+    renderSettingsLine(formattedSettings, exif);
+
     if (modalTags) {
       modalTags.innerHTML = tags.map(function(t) { return '<span class="px-2 py-0.5 text-[9px] uppercase rounded bg-slate-900 text-slate-400 border border-slate-800">#' + esc(t) + '</span>'; }).join('');
     }
@@ -490,21 +619,119 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
       likeBtn.className = isLiked 
         ? 'px-2.5 py-1 rounded bg-rose-950/40 border border-rose-700 text-rose-400 transition flex items-center gap-1.5 cursor-pointer'
         : 'px-2.5 py-1 rounded bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 transition flex items-center gap-1.5 cursor-pointer';
-      likeBtn.innerHTML = '<span class="heart-icon">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="like-label">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
+      likeBtn.innerHTML = '<span class="heart-icon text-rose-500">' + (isLiked ? '&hearts;' : '&#9825;') + '</span><span class="like-label">' + (isLiked ? 'LIKED' : 'LIKE') + '</span>';
+    }
+  }
+
+  function renderSettingsLine(formattedSettings, exif) {
+    var modalSettings = document.getElementById('lightbox-settings');
+    if (!modalSettings) return;
+
+    if (isRawExifMode) {
+      var rawPayload = {
+        focal: exif.focalLength ? exif.focalLength + 'mm' : null,
+        aperture: exif.fNumber ? 'f/' + exif.fNumber : null,
+        shutter: exif.exposureTime ? exif.exposureTime + 's' : null,
+        iso: exif.iso || null
+      };
+      modalSettings.innerHTML = '<span class="bg-slate-900 text-emerald-300 px-2 py-0.5 rounded border border-emerald-900/80 font-mono text-[10px]">' + JSON.stringify(rawPayload) + '</span>';
+    } else {
+      modalSettings.innerHTML = formattedSettings ? ('<span class="bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-900/60">' + formattedSettings + '</span>') : '';
+    }
+  }
+
+  function nextPhoto() {
+    if (currentFilteredAssets.length <= 1) return;
+    activeLightboxIndex = (activeLightboxIndex + 1) % currentFilteredAssets.length;
+    updateLightboxContent();
+  }
+
+  function prevPhoto() {
+    if (currentFilteredAssets.length <= 1) return;
+    activeLightboxIndex = (activeLightboxIndex - 1 + currentFilteredAssets.length) % currentFilteredAssets.length;
+    updateLightboxContent();
+  }
+
+  function toggleFocusMode() {
+    isFocusMode = !isFocusMode;
+    var topBar = document.getElementById('lightbox-top-bar');
+    var hud = document.getElementById('lightbox-hud');
+    var prevBtn = document.getElementById('lightbox-prev-btn');
+    var nextBtn = document.getElementById('lightbox-next-btn');
+    var focusBtn = document.getElementById('lightbox-focus-btn');
+
+    if (isFocusMode) {
+      if (topBar) topBar.classList.add('opacity-0', 'pointer-events-none');
+      if (hud) hud.classList.add('opacity-0', 'pointer-events-none');
+      if (prevBtn) prevBtn.classList.add('opacity-0');
+      if (nextBtn) nextBtn.classList.add('opacity-0');
+      if (focusBtn) focusBtn.textContent = '[HUD]';
+    } else {
+      if (topBar) topBar.classList.remove('opacity-0', 'pointer-events-none');
+      if (hud) hud.classList.remove('opacity-0', 'pointer-events-none');
+      if (prevBtn) prevBtn.classList.remove('opacity-0');
+      if (nextBtn) nextBtn.classList.remove('opacity-0');
+      if (focusBtn) focusBtn.textContent = '[FOCUS]';
+    }
+  }
+
+  function openLightbox(index) {
+    if (index < 0 || index >= currentFilteredAssets.length) return;
+    activeLightboxIndex = index;
+    isRawExifMode = false;
+    isFocusMode = false;
+
+    var modal = document.getElementById('lightbox-modal');
+    if (!modal) return;
+
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
     }
 
+    updateLightboxContent();
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden'; document.documentElement.classList.add('lightbox-open');
   }
 
   function closeLightbox() {
     var modal = document.getElementById('lightbox-modal');
     if (!modal) return;
+
+    // Smoothly scroll the feed so it lands on the active photo when exiting
+    if (activeLightboxIndex >= 0 && activeLightboxIndex < currentFilteredAssets.length) {
+      var currentAsset = currentFilteredAssets[activeLightboxIndex];
+      var shortId = getShortId(currentAsset.id);
+      var card = document.getElementById(shortId);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
     modal.style.display = 'none';
     var img = document.getElementById('lightbox-img');
     if (img) img.src = '';
-    document.body.style.overflow = '';
-    activeLightboxAsset = null;
+    document.body.style.overflow = ''; document.documentElement.classList.remove('lightbox-open');
+    activeLightboxIndex = -1;
+    isFocusMode = false;
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  function handleDeepLink() {
+    var hash = window.location.hash.replace('#', '').trim().toLowerCase();
+    if (!hash) return;
+
+    var idx = currentFilteredAssets.findIndex(function(a) {
+      return a.id.toLowerCase() === hash || getShortId(a.id).toLowerCase() === hash;
+    });
+
+    if (idx !== -1) {
+      var shortId = getShortId(currentFilteredAssets[idx].id);
+      var card = document.getElementById(shortId);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      openLightbox(idx);
+    }
   }
 
   function initPhotosTurnstile() {
@@ -689,6 +916,7 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
 
       buildFilterButtons(allFoundTags);
       renderGallery();
+      handleDeepLink();
 
       sortBtn?.addEventListener('click', function() {
         sortDescending = !sortDescending;
@@ -699,16 +927,130 @@ const immichAlbumId = import.meta.env.PUBLIC_IMMICH_ALBUM_ID || "";
         renderGallery();
       });
 
-      document.getElementById('lightbox-close')?.addEventListener('click', closeLightbox);
+      document.getElementById('lightbox-next-btn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        nextPhoto();
+      });
+
+      document.getElementById('lightbox-prev-btn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        prevPhoto();
+      });
+
+      document.getElementById('lightbox-focus-btn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleFocusMode();
+      });
+
+      document.getElementById('lightbox-settings-btn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        isRawExifMode = !isRawExifMode;
+        if (activeLightboxIndex >= 0) {
+          var asset = currentFilteredAssets[activeLightboxIndex];
+          var exif = asset.exif || {};
+          var fStop = exif.fNumber ? ('f/' + exif.fNumber) : '';
+          var shutter = exif.exposureTime ? (exif.exposureTime + 's') : '';
+          var iso = exif.iso ? ('ISO ' + exif.iso) : '';
+          var focal = exif.focalLength ? (exif.focalLength + 'mm') : '';
+          var formatted = [focal, fStop, shutter, iso].filter(Boolean).join('  ·  ');
+          renderSettingsLine(formatted, exif);
+        }
+      });
+
+      document.getElementById('lightbox-close')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeLightbox();
+      });
+
       document.getElementById('lightbox-modal')?.addEventListener('click', function(e) {
-        if (e.target === document.getElementById('lightbox-modal')) closeLightbox();
+        var hud = document.getElementById('lightbox-hud');
+        var topBar = document.getElementById('lightbox-top-bar');
+        var prevBtn = document.getElementById('lightbox-prev-btn');
+        var nextBtn = document.getElementById('lightbox-next-btn');
+        var img = document.getElementById('lightbox-img');
+
+        if (hud && hud.contains(e.target)) return;
+        if (topBar && topBar.contains(e.target)) return;
+        if (prevBtn && prevBtn.contains(e.target)) return;
+        if (nextBtn && nextBtn.contains(e.target)) return;
+        if (img && img.contains(e.target)) return;
+
+        closeLightbox();
       });
-      document.getElementById('lightbox-like-btn')?.addEventListener('click', function() {
-        if (activeLightboxAsset) toggleLike(activeLightboxAsset.id);
+
+      var lightboxImg = document.getElementById('lightbox-img');
+      var lastLightboxTap = 0;
+      lightboxImg?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var now = Date.now();
+        if (now - lastLightboxTap < 300) {
+          if (activeLightboxIndex >= 0) {
+            var asset = currentFilteredAssets[activeLightboxIndex];
+            if (asset) {
+              toggleLike(asset.id);
+              triggerHeartBurst();
+            }
+          }
+          lastLightboxTap = 0;
+          return;
+        }
+        lastLightboxTap = now;
       });
+
+      var viewport = document.getElementById('lightbox-viewport');
+      viewport?.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 1) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      viewport?.addEventListener('touchend', function(e) {
+        if (e.changedTouches.length === 1) {
+          var deltaX = e.changedTouches[0].clientX - touchStartX;
+          var deltaY = e.changedTouches[0].clientY - touchStartY;
+          if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+            if (deltaX < 0) {
+              nextPhoto();
+            } else {
+              prevPhoto();
+            }
+          }
+        }
+      }, { passive: true });
+
+      document.getElementById('lightbox-like-btn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (activeLightboxIndex >= 0) {
+          var asset = currentFilteredAssets[activeLightboxIndex];
+          if (asset) toggleLike(asset.id);
+        }
+      });
+
+      document.getElementById('lightbox-share-btn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (activeLightboxIndex >= 0) {
+          var asset = currentFilteredAssets[activeLightboxIndex];
+          if (asset) copyShortLink(asset.id, document.getElementById('lightbox-share-btn'));
+        }
+      });
+
       window.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeLightbox();
+        var modal = document.getElementById('lightbox-modal');
+        if (!modal || modal.style.display === 'none') return;
+
+        if (e.key === 'Escape') {
+          closeLightbox();
+        } else if (e.key === 'ArrowRight') {
+          nextPhoto();
+        } else if (e.key === 'ArrowLeft') {
+          prevPhoto();
+        } else if (e.key === 'f' || e.key === 'F') {
+          toggleFocusMode();
+        }
       });
+
+      window.addEventListener('hashchange', handleDeepLink);
     } catch (err) {
       if (loader) loader.innerHTML = '<span class="text-rose-400 font-mono text-xs">[!] Telemetry offline</span>';
     }
