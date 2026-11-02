@@ -1,6 +1,6 @@
 ---
 ---
-<div class="flex items-center justify-between font-mono text-xs text-slate-500 pb-3 border-b border-slate-800/80 mb-6">
+<div class="flex items-center justify-between font-mono text-xs text-slate-500 pb-3 border-b border-slate-800/80 mb-6 print:hidden">
   <!-- Live Health Probe -->
   <div class="flex items-center gap-2">
     <span id="health-indicator" class="relative flex h-2 w-2">
@@ -55,7 +55,6 @@
 
 <script>
   function setupHeader() {
-    // 1. Health Probe
     const textElem = document.getElementById('health-text');
     const indicator = document.getElementById('health-indicator');
     if (textElem && indicator) {
@@ -78,7 +77,6 @@
         });
     }
 
-    // 2. CRT Toggle Handler
     const crtBtn = document.getElementById('crt-toggle-btn');
     const crtLabel = document.getElementById('crt-status-label');
 
@@ -97,7 +95,6 @@
       syncCRTState();
     });
 
-    // 3. Light / Dark Mode Toggle
     const modeBtn = document.getElementById('theme-mode-btn');
     const modeIcon = document.getElementById('theme-mode-icon');
     const modeLabel = document.getElementById('theme-mode-label');

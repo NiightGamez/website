@@ -526,3 +526,65 @@ html.light[data-theme="cyan"] .photo-card span.uppercase:hover {
   color: #155e75 !important;                         /* cyan-800 */
   background-color: #ecfeff !important;              /* cyan-50 */
 }
+
+/* Print-to-PDF Formatting Rules */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  nav, footer, .command-palette, header button, header a {
+    display: none !important;
+  }
+  .card-hover {
+    border-color: #000000 !important;
+    background-color: transparent !important;
+  }
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+}
+
+/* Print-to-PDF Formatting Rules */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  nav, footer, .command-palette, header button, header a {
+    display: none !important;
+  }
+  .card-hover {
+    border-color: #000000 !important;
+    background-color: transparent !important;
+  }
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+}
+
+/* Clean Native Print to PDF Layout */
+@page {
+  size: letter portrait;
+  margin: 0.4in;
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  nav, footer, .command-palette, header button, header a {
+    display: none !important;
+  }
+  .card-hover, section div {
+    border-color: #000000 !important;
+    background-color: transparent !important;
+  }
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+}
