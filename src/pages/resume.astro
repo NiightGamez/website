@@ -39,6 +39,8 @@ const badges = {
     type: "external"
   }
 };
+
+const siteKey = "0x4AAAAAAFXv8I1L-ZUo5LD1";
 ---
 <BaseLayout title="Resume" currentPage="resume" description="Curriculum Vitae: Systems Administration, Hardware Diagnostics, Networking, and Security Credentials.">
   
@@ -51,9 +53,29 @@ const badges = {
           ❯ CURRICULUM_VITAE // SYS_INFRA_SECURITY
         </div>
         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-mono">Michael Voorhies</h1>
-        <p class="text-slate-400 text-sm mt-1">
-          Systems, Networking & Defensive Security • Indiana, PA • <a href="https://mvoorhies.com" class="text-emerald-400 hover:underline">mvoorhies.com</a> • <a href="/contact" class="text-slate-300 hover:text-emerald-400 underline decoration-slate-600">[Encrypted Contact / Dispatch]</a>
-        </p>
+        
+        <!-- Turnstile-Gated Contact Line -->
+        <div class="text-slate-400 text-sm mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono">
+          <span>Systems, Networking & Defensive Security • Indiana, PA •</span>
+          
+          <!-- Verification Button (Hidden once verified) -->
+          <span id="email-gate-container" class="inline-flex items-center">
+            <button 
+              id="trigger-turnstile-btn"
+              type="button"
+              class="text-xs text-emerald-400 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/80 px-2 py-0.5 rounded cursor-pointer transition flex items-center gap-1"
+            >
+              <span>[VERIFY TO REVEAL EMAIL]</span>
+            </button>
+          </span>
+
+          <!-- Revealed Email Link -->
+          <span id="email-revealed" class="hidden text-emerald-400">
+            <a id="email-link" href="#" class="hover:underline"></a>
+          </span>
+
+          <span>• <a href="https://mvoorhies.com" class="text-slate-300 hover:text-emerald-400 hover:underline">mvoorhies.com</a></span>
+        </div>
       </div>
 
       <!-- Action Buttons -->
@@ -67,7 +89,8 @@ const badges = {
           <span>[RAW .MD]</span>
         </a>
         <button 
-          onclick="window.print()" 
+          id="resume-print-btn"
+          type="button"
           class="px-4 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 rounded transition flex items-center gap-2 cursor-pointer shadow-lg active:scale-95"
         >
           <span>[🖨️ / ⬇️]</span>
@@ -83,7 +106,7 @@ const badges = {
       <div class="hidden print:block border-b-2 border-black pb-3 mb-4">
         <h1 class="text-2xl font-bold uppercase tracking-tight text-black font-sans">Michael Voorhies</h1>
         <p class="text-xs text-black mt-1 font-sans">
-          Indiana, PA • <a href="https://mvoorhies.com">https://mvoorhies.com</a> • <a href="https://mvoorhies.com/contact">https://mvoorhies.com/contact</a> • <a href="https://www.credly.com/users/michaelvoorhies">https://www.credly.com/users/michaelvoorhies</a>
+          Indiana, PA • <span id="print-email-target">contact@mvoorhies.com</span> • <a href="https://mvoorhies.com">https://mvoorhies.com</a> • <a href="https://www.credly.com/users/michaelvoorhies">https://www.credly.com/users/michaelvoorhies</a>
         </p>
       </div>
 
@@ -277,10 +300,187 @@ const badges = {
     </div>
   </div>
 
-  <!-- Print Stylesheet: Preserves link functionality, strips underlines/colors -->
+  <!-- FIXED MODAL: Locked to viewport center with z-[99999] -->
+  <div 
+    id="print-verify-modal" 
+    class="print:hidden fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center p-4 select-none"
+    style="display: none;"
+  >
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-xl shadow-2xl p-6 text-center font-mono flex flex-col items-center gap-3 animate-fade-in relative">
+      <div class="text-[11px] text-emerald-400 border border-emerald-800 bg-emerald-950/70 px-2.5 py-0.5 rounded">
+        ❯ BOT_CHECK // VERIFICATION
+      </div>
+      <h3 class="text-sm font-bold text-white font-sans">Human Verification</h3>
+      <p class="text-xs text-slate-400 leading-relaxed font-sans">
+        Complete the check below to reveal contact details and proceed.
+      </p>
+      
+      <!-- Mount container -->
+      <div id="modal-turnstile-slot" class="w-full flex items-center justify-center min-h-[75px] my-1"></div>
+      
+      <button 
+        id="cancel-verify-btn" 
+        type="button" 
+        class="text-xs text-slate-500 hover:text-slate-300 transition cursor-pointer mt-1"
+      >
+        [Cancel]
+      </button>
+    </div>
+  </div>
+
+  <!-- Inline Turnstile Script & Interceptor -->
+  <script define:vars={{ siteKey }}>
+    const encodedInbox = "Y29udGFjdEBtdm9vcmhpZXMuY29t";
+    let isVerified = false;
+    let turnstileWidgetId = null;
+
+    function applyDecodedEmail() {
+      const email = atob(encodedInbox);
+      isVerified = true;
+
+      // 1. Completely hide the "Verify to reveal email" button and its container
+      const gateContainer = document.getElementById('email-gate-container');
+      const triggerBtn = document.getElementById('trigger-turnstile-btn');
+      if (gateContainer) {
+        gateContainer.style.display = 'none';
+        gateContainer.classList.add('hidden');
+      }
+      if (triggerBtn) {
+        triggerBtn.style.display = 'none';
+        triggerBtn.classList.add('hidden');
+      }
+
+      // 2. Reveal the clickable email link in the header
+      const emailRevealed = document.getElementById('email-revealed');
+      const emailLink = document.getElementById('email-link');
+      if (emailRevealed && emailLink) {
+        emailLink.textContent = email;
+        emailLink.href = 'mailto:' + email;
+        emailRevealed.style.display = 'inline';
+        emailRevealed.classList.remove('hidden');
+      }
+
+      // 3. Update the Print Document Target
+      const printTarget = document.getElementById('print-email-target');
+      if (printTarget) {
+        printTarget.textContent = email;
+      }
+    }
+
+    function ensureModalInBody() {
+      const modal = document.getElementById('print-verify-modal');
+      if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+    }
+
+    function openVerificationModal(callbackOnComplete) {
+      if (isVerified) {
+        if (callbackOnComplete) callbackOnComplete();
+        return;
+      }
+
+      ensureModalInBody();
+      const modal = document.getElementById('print-verify-modal');
+      if (!modal) return;
+
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      function mountTurnstile() {
+        if (!window.turnstile) return;
+        const slot = document.getElementById('modal-turnstile-slot');
+        if (!slot) return;
+
+        if (turnstileWidgetId !== null) {
+          window.turnstile.reset(turnstileWidgetId);
+          return;
+        }
+
+        turnstileWidgetId = window.turnstile.render('#modal-turnstile-slot', {
+          sitekey: siteKey,
+          theme: 'dark',
+          callback: function(token) {
+            applyDecodedEmail();
+            closeModal();
+            if (callbackOnComplete) callbackOnComplete();
+          }
+        });
+      }
+
+      if (window.turnstile) {
+        mountTurnstile();
+      } else {
+        const poll = setInterval(() => {
+          if (window.turnstile) {
+            clearInterval(poll);
+            mountTurnstile();
+          }
+        }, 100);
+      }
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('print-verify-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
+      document.body.style.overflow = '';
+    }
+
+    function setupInterceptors() {
+      ensureModalInBody();
+
+      // Trigger from Header [VERIFY TO REVEAL EMAIL] button
+      const triggerBtn = document.getElementById('trigger-turnstile-btn');
+      triggerBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openVerificationModal();
+      });
+
+      // Trigger from Print/PDF Button
+      const printBtn = document.getElementById('resume-print-btn');
+      printBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openVerificationModal(() => {
+          window.print();
+        });
+      });
+
+      // Trigger from Ctrl+P / Cmd+P
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+          if (!isVerified) {
+            e.preventDefault();
+            openVerificationModal(() => {
+              window.print();
+            });
+          }
+        }
+        if (e.key === 'Escape') {
+          closeModal();
+        }
+      });
+
+      // Modal Close Handlers
+      document.getElementById('cancel-verify-btn')?.addEventListener('click', closeModal);
+      document.getElementById('print-verify-modal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('print-verify-modal')) {
+          closeModal();
+        }
+      });
+    }
+
+    setupInterceptors();
+    document.addEventListener('astro:after-swap', setupInterceptors);
+  </script>
+
+  <!-- Print Stylesheet -->
   <style is:global>
     @media print {
-      nav, footer, .command-palette, #ambient-scroll-line, [class*="TerminalHeader"], [class*="terminal-header"], details summary, details div {
+      nav, footer, .command-palette, #ambient-scroll-line, [class*="TerminalHeader"], [class*="terminal-header"], details summary, details div, #print-verify-modal {
         display: none !important;
       }
 
